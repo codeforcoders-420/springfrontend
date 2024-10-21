@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>End to End Workflow</title>
+<link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+	<div class="header">
+		<div class="header-left">
+			<h1>MN End to End Workflow</h1>
+		</div>
+		<div class="header-right">
+			<span class="user-name">Raja Murugan</span><br> <span
+				class="user-role">Role (Analyst)</span>
+		</div>
+	</div>
+
+	<div class="container">
+		<div class="sidebar">
+			<button class="menu-button" onclick="showSection('changeFile')">Change
+				File Generator</button>
+			<button class="menu-button" onclick="showSection('peerReview')">Peer
+				Review Validator</button>
+			<button class="menu-button" onclick="showSection('impactReport')">Impact
+				Report Generator</button>
+		</div>
+
+		<div class="content">
+			<!-- Change File Generator Section -->
+			<div id="changeFile" class="section">
+				<div class="right-pane">
+					<div class="right-section">
+						<h3>Explanation / Summary</h3>
+						<p>[Change File usage Content will go here]</p>
+					</div>
+					<div class="right-section">
+						<h3>Utility</h3>
+						<form>
+							<label for="env-changeFile">Select Env:</label> <select
+								id="env-changeFile">
+								<option value="SIT">SIT</option>
+								<option value="PROD">PROD</option>
+							</select> <label for="changeFile-upload">Select Change File:</label> <input
+								type="file" id="changeFile-upload">
+
+							<button type="button">Validate</button>
+						</form>
+						<!-- Flex container to hold both the progress circle and message -->
+						<div class="progress-message-container">
+							<div class="progress-ring-container">
+								<svg class="progress-ring" width="120" height="120">
+                                <circle
+										class="progress-ring__background" stroke="#d3d3d3"
+										stroke-width="8" fill="transparent" r="52" cx="60" cy="60" />
+                                <circle class="progress-ring__circle"
+										stroke="blue" stroke-width="8" fill="transparent" r="52"
+										cx="60" cy="60" />
+                            </svg>
+								<span class="progress-ring__text">0%</span>
+							</div>
+							<!-- Area to display only the latest message -->
+							<div id="message-area"></div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- Peer Review Validator Section -->
+			<div id="peerReview" class="section">
+				<div class="right-pane">
+					<div class="right-section">
+						<h3>Explanation / Summary</h3>
+						<p>[PR Review validator Content will go here]</p>
+					</div>
+					<div class="right-section">
+						<h3>Utility</h3>
+						<form>
+							<label for="env-peerReview">Select Env:</label> <select
+								id="env-peerReview">
+								<option value="SIT">SIT</option>
+								<option value="PROD">PROD</option>
+							</select> <label for="peerReview-file">Select Change File:</label> <input
+								type="file" id="peerReview-file">
+
+							<button type="button">Validate</button>
+						</form>
+						<div class="progress-circle">
+							<div class="circle">
+								<span class="percentage">0%</span>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- Impact Report Generator Section -->
+			<div id="impactReport" class="section">
+				<div class="right-pane">
+					<div class="right-section">
+						<h3>Explanation / Summary</h3>
+						<p>[Impact Report Content will go here]</p>
+					</div>
+					<div class="right-section">
+						<h3>Utility</h3>
+						<form>
+							<label for="env-peerReview">Select Env:</label> <select
+								id="env-peerReview">
+								<option value="SIT">SIT</option>
+								<option value="PROD">PROD</option>
+							</select> <label for="peerReview-file">Select Change File:</label> <input
+								type="file" id="peerReview-file">
+
+							<button type="button">Validate</button>
+						</form>
+						<div class="progress-circle">
+							<div class="circle">
+								<span class="percentage">0%</span>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script>
+		function showSection(sectionId) {
+			document.querySelectorAll('.section').forEach(function(section) {
+				section.style.display = 'none';
+			});
+			document.getElementById(sectionId).style.display = 'block';
+		}
+	</script>
+
+<script>
+    const progressCircle = document.querySelector('.progress-ring__circle');
+    const progressText = document.querySelector('.progress-ring__text');
+    const messageArea = document.getElementById('message-area');
+    const radius = progressCircle.r.baseVal.value;
+    const circumference = 2 * Math.PI * radius;
+
+    progressCircle.style.strokeDasharray = `${circumference} ${circumference}`;
+    progressCircle.style.strokeDashoffset = circumference;
+
+    function setProgress(percent) {
+        const offset = circumference - (percent / 100) * circumference;
+        progressCircle.style.strokeDashoffset = offset;
+        progressText.textContent = `${percent}%`;
+    }
+
+    function displayLatestMessage(message) {
+        // Make the message area visible if it's hidden
+        messageArea.style.display = "block";
+        messageArea.textContent = message;  // Replace the previous message
+    }
+
+    function updateProgress() {
+        const socket = new WebSocket("ws://localhost:8080/progress-websocket");
+
+        socket.onmessage = function(event) {
+            const data = event.data.split(":");
+            const type = data[0];
+            const content = data[1];
+
+            if (type === "progress") {
+                setProgress(parseInt(content));
+            } else if (type === "message") {
+                displayLatestMessage(content);
+            }
+        };
+
+        socket.onclose = function() {
+            console.log("WebSocket connection closed");
+        };
+    }
+
+    document.querySelector("button[type='button']").addEventListener('click', function() {
+        updateProgress();
+        messageArea.style.display = "block";  // Show the message area when progress starts
+    });
+</script>
+
+</body>
+</html>

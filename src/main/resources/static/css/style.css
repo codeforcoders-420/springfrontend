@@ -1,0 +1,295 @@
+/* General Reset */
+* {
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+		"Helvetica Neue", Arial, sans-serif;
+}
+
+/* Body Styling */
+body {
+	background-color: #f5f5f7;
+	font-size: 16px;
+	color: #333;
+}
+
+/* Container for entire layout */
+.container {
+	display: flex;
+	height: 100vh;
+	width: 100%;
+}
+
+/* Sidebar for left pane */
+.sidebar {
+	width: 20%;
+	background-color: #ffffff; /* Changed to white */
+	padding: 20px;
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	justify-content: flex-start;
+}
+
+.menu-button {
+	background-color: #007bff; /* Same blue as Validate button */
+	color: white;
+	font-size: 16px;
+	border: none;
+	padding: 8px 16px;
+	margin-bottom: 5px;
+	width: 100%;
+	text-align: left;
+	cursor: pointer;
+	border-radius: 5px;
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+		"Helvetica Neue", Arial, sans-serif;
+	/* Same font as Validate button */
+	transition: background-color 0.3s ease;
+}
+
+.menu-button:hover {
+	background-color: #0056b3;
+	/* Hover effect similar to Validate button */
+}
+
+.content {
+	width: 80%;
+	padding: 40px;
+	background-color: #ffffff;
+	border-left: 1px solid #ddd;
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	justify-content: flex-start;
+}
+
+.progress-message-container {
+    display: flex;
+    align-items: flex-start;  /* Align message and circle at the top */
+    gap: 20px;                /* Space between progress circle and message */
+    width: 100%;              /* Take up the full width of the container */
+}
+
+.progress-ring-container {
+    position: relative;
+    width: 120px;
+    height: 120px;
+}
+
+.progress-ring__background {
+    stroke: #d3d3d3;
+}
+
+.progress-ring__circle {
+    transition: stroke-dashoffset 0.35s;
+    transform: rotate(-90deg);
+    transform-origin: 50% 50%;
+    stroke: blue;
+}
+
+.progress-ring__text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 22px;
+    font-weight: bold;
+    color: blue;
+}
+
+/* Dynamic message area styling */
+#message-area {
+    padding: 10px;
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+    border-radius: 5px;
+    font-size: 14px;
+    flex-grow: 1;
+    max-width: 100%;
+    word-wrap: break-word;
+    text-align: left;
+    min-height: 40px;
+    max-height: 300px;
+    overflow-y: auto;
+
+    /* Hide the message area initially */
+    display: none;
+}
+/* Section container to manage content visibility */
+.section {
+	display: none;
+	width: 100%;
+}
+
+/* New: Split Right Pane into 2 Sections */
+.right-pane {
+	display: flex;
+	width: 100%;
+	justify-content: space-between;
+	margin-top: 30px;
+}
+
+.right-section {
+	width: 48%; /* Half the width for each section */
+	background-color: #f9f9f9;
+	padding: 20px;
+	border-radius: 10px;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Utility Form Styling */
+form {
+	margin-top: 20px;
+	display: flex;
+	flex-direction: column;
+}
+
+select, input[type="file"], button {
+	padding: 12px;
+	font-size: 16px;
+	margin-top: 10px;
+	margin-bottom: 20px;
+	width: 100%; /* Full width in the form */
+	border-radius: 8px;
+	border: 1px solid #ccc;
+}
+
+button {
+	background-color: #007bff;
+	color: white;
+	border: none;
+	cursor: pointer;
+	transition: background-color 0.3s ease;
+}
+
+button:hover {
+	background-color: #0056b3;
+}
+
+/* Progress Circle and Message Pane */
+.progress-circle {
+	display: inline-block;
+	margin-top: 30px;
+	width: 120px;
+	height: 120px;
+	position: relative;
+}
+
+.circle {
+	width: 120px;
+	height: 120px;
+	border-radius: 50%;
+	background-color: #d3d3d3;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
+.percentage {
+	font-size: 24px;
+	font-weight: bold;
+	color: #007bff; /* Using the blue color inspired by Proto 1 */
+}
+
+.message-pane {
+	display: inline-block;
+	margin-left: 40px;
+	padding: 20px;
+	background-color: #f0f0f0;
+	border-radius: 10px;
+	width: 60%;
+	box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.message-pane p {
+	font-size: 18px;
+	color: #333;
+}
+
+/* Typography and Heading Styling */
+h2 {
+	font-size: 28px;
+	font-weight: bold;
+	color: #1f1f1f;
+	margin-bottom: 20px;
+}
+
+h3 {
+	font-size: 22px;
+	font-weight: 500;
+	margin-bottom: 10px;
+}
+
+p {
+	font-size: 18px;
+	margin-bottom: 10px;
+	line-height: 1.6;
+}
+
+/* Header section */
+.header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	background-color: #fff;
+	padding: 20px;
+	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+	border-bottom: 2px solid #ddd; /* Line beneath the header */
+}
+
+.header-left h1 {
+	margin: 0;
+	font-size: 24px;
+	color: #007bff;
+}
+
+.header-right {
+	text-align: right;
+}
+
+.user-name {
+	font-weight: bold;
+	font-size: 16px;
+	color: #333;
+}
+
+.user-role {
+	font-size: 14px;
+	color: #666;
+}
+
+/* Content pane line beneath options */
+.content-pane {
+	border-top: 2px solid #ddd; /* Line beneath the content pane */
+	padding-top: 20px;
+}
+
+/* Responsive Design for smaller screens */
+@media screen and (max-width: 768px) {
+	.container {
+		flex-direction: column;
+	}
+	.sidebar {
+		width: 100%;
+	}
+	.content {
+		width: 100%;
+	}
+	.right-pane {
+		flex-direction: column;
+	}
+	.right-section {
+		width: 100%;
+		margin-bottom: 20px;
+	}
+	select, input[type="file"], button {
+		width: 100%;
+	}
+	.progress-circle, .message-pane {
+		width: 100%;
+		margin-left: 0;
+	}
+}
