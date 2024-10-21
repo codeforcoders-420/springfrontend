@@ -1,0 +1,106 @@
+body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    height: 100vh;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    text-align: center;
+    width: 100%;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px;
+    border-bottom: 1px solid #ccc;
+}
+
+.header h1 {
+    margin: 0;
+}
+
+/* Align Cancel button directly above the utility section */
+.cancel-container {
+    text-align: right;
+    margin-bottom: 10px;
+}
+
+#cancel-btn {
+    display: none;
+    background-color: #f44336;
+    color: white;
+    border: none;
+    padding: 5px 8px;
+    text-align: center;
+    font-size: 18px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+#cancel-btn:hover {
+    background-color: #d32f2f;
+}
+
+.right-pane {
+    display: flex;
+    justify-content: center;
+    margin-top: 30px;
+}
+
+.progress-message-container {
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    width: 100%;
+}
+
+.progress-ring-container {
+    position: relative;
+    width: 120px;
+    height: 120px;
+}
+
+.progress-ring__background {
+    stroke: #d3d3d3;
+}
+
+.progress-ring__circle {
+    transition: stroke-dashoffset 0.35s;
+    transform: rotate(-90deg);
+    transform-origin: 50% 50%;
+    stroke: blue;
+}
+
+.progress-ring__text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 22px;
+    font-weight: bold;
+    color: blue;
+}
+
+/* Message area styling */
+#message-area {
+    padding: 10px;
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+    border-radius: 5px;
+    font-size: 14px;
+    flex-grow: 1;
+    max-width: 100%;
+    word-wrap: break-word;
+    text-align: left;
+    min-height: 40px;
+    max-height: 300px;
+    overflow-y: auto;
+    display: none;
+}
