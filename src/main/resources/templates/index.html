@@ -183,5 +183,84 @@
     });
 </script>
 
+<script src="https://cdn.jsdelivr.net/sockjs/1.0.0/sockjs.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+
+<script>
+    let stompClient = null;
+
+    const progressCircle = document.querySelector('.progress-ring__circle');
+    const progressText = document.querySelector('.progress-ring__text');
+    const messageArea = document.getElementById('message-area');
+    const validateBtn = document.getElementById('validate-btn');
+    const cancelBtn = document.getElementById('cancel-btn');
+
+    const radius = progressCircle.r.baseVal.value;
+    const circumference = 2 * Math.PI * radius;
+
+    progressCircle.style.strokeDasharray = `${circumference} ${circumference}`;
+    progressCircle.style.strokeDashoffset = circumference;
+
+    function setProgress(percent) {
+        const offset = circumference - (percent / 100) * circumference;
+        progressCircle.style.strokeDashoffset = offset;
+        progressText.textContent = `${percent}%`;
+    }
+
+    function displayLatestMessage(message) {
+        messageArea.style.display = "block";
+        messageArea.textContent = message;
+    }
+
+    function connect() {
+        const socket = new SockJS('/progress-websocket');
+        stompClient = Stomp.over(socket);
+        stompClient.connect({}, function (frame) {
+            console.log('Connected: ' + frame);
+            stompClient.subscribe('/topic/progress', function (response) {
+                const data = response.body.split(":");
+                const type = data[0];
+                const content = data[1];
+                
+                if (type === "progress") {
+                    setProgress(parseInt(content));
+                } else if (type === "message") {
+                    displayLatestMessage(content);
+                }
+            });
+        });
+    }
+
+    function disconnect() {
+        if (stompClient !== null) {
+            stompClient.disconnect();
+        }
+        console.log("Disconnected");
+    }
+
+    document.querySelector("button[type='button']").addEventListener('click', function() {
+        connect();  // Establish WebSocket connection when validation starts
+        validateBtn.disabled = true;  // Disable Validate button during processing
+        
+        // Simulate form submission to trigger validation in backend
+        const formData = new FormData();
+        formData.append('file', document.querySelector('input[type="file"]').files[0]);
+
+        fetch('/validate-excel', {
+            method: 'POST',
+            body: formData
+        }).then(response => response.text()).then(text => {
+            console.log(text);
+        });
+    });
+
+    cancelBtn.addEventListener('click', function() {
+        disconnect();  // Disconnect WebSocket on cancel
+        validateBtn.disabled = false;  // Re-enable Validate button
+        cancelBtn.style.display = "none";  // Hide Cancel button
+        displayLatestMessage("User cancelled the process.");
+    });
+</script>
+
 </body>
 </html>

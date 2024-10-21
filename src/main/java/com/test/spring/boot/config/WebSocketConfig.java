@@ -15,18 +15,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.test.spring.boot.handler.ProgressWebSocketHandler;
 
 @Configuration
-@EnableWebSocket
-public class WebSocketConfig implements WebSocketConfigurer {
+@EnableWebSocketMessageBroker
+public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
-    private final ExcelReaderService excelReaderService;
-
-    @Autowired
-    public WebSocketConfig(ExcelReaderService excelReaderService) {
-        this.excelReaderService = excelReaderService;
+    @Override
+    public void configureMessageBroker(MessageBrokerRegistry config) {
+        config.enableSimpleBroker("/topic");
+        config.setApplicationDestinationPrefixes("/app");
     }
 
     @Override
-    public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
-        registry.addHandler(new ProgressWebSocketHandler(excelReaderService), "/progress-websocket").setAllowedOrigins("*");
+    public void registerStompEndpoints(StompEndpointRegistry registry) {
+        registry.addEndpoint("/progress-websocket").setAllowedOriginPatterns("*").withSockJS();
     }
 }
