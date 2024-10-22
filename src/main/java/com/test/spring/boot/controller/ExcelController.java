@@ -12,11 +12,14 @@ public class ExcelController {
 
     private final ExcelReaderService excelReaderService;
 
+    @Autowired
     public ExcelController(ExcelReaderService excelReaderService) {
         this.excelReaderService = excelReaderService;
-        System.out.println("ExcelController initialized!");
     }
 
-    // Any other REST endpoints or functionalities can remain here
-
+    @PostMapping("/validate-excel")
+    public ResponseEntity<String> validateExcel(@RequestParam("file") MultipartFile file) {
+        excelReaderService.validateExcelFile(file);
+        return ResponseEntity.ok("Validation started");
+    }
 }
