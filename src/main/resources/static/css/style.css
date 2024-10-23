@@ -293,3 +293,101 @@ p {
 		margin-left: 0;
 	}
 }
+
+/* Align Cancel button directly above the utility section */
+.cancel-container {
+    text-align: right;
+    margin-bottom: 10px;
+}
+
+#cancel-btn {
+    display: none;
+    background-color: #f44336;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    text-align: center;
+    font-size: 18px;
+    border-radius: 4px;
+    cursor: pointer;
+    width: 100px;
+    margin: 0 auto;
+}
+
+#cancel-btn:hover {
+    background-color: #d32f2f;
+}
+
+.progress-message-container {
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    width: 100%;
+}
+
+.progress-ring-container {
+    position: relative;
+    width: 120px;
+    height: 120px;
+}
+
+.progress-ring__background {
+    stroke: #d3d3d3;
+}
+
+.progress-ring__circle {
+    transition: stroke-dashoffset 0.35s;
+    transform: rotate(-90deg);
+    transform-origin: 50% 50%;
+    stroke: blue;
+}
+
+.progress-ring__text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 22px;
+    font-weight: bold;
+    color: blue;
+}
+
+/* Message area styling */
+#message-area {
+    padding: 10px;
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+    border-radius: 5px;
+    font-size: 14px;
+    flex-grow: 1;
+    max-width: 100%;
+    word-wrap: break-word;
+    text-align: left;
+    min-height: 40px;
+    max-height: 300px;
+    overflow-y: auto;
+    display: none;
+}
+
+/* Hyperlink styling for the report folder */
+#report-link {
+    margin-top: 20px;
+    display: none;  /* Initially hidden, shown after validation */
+    font-size: 14px;
+    color: #007bff;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+#report-link:hover {
+    color: #0056b3;
+    text-decoration: none;
+}
+
+/* Disabled state for the Validate button */
+button:disabled {
+    background-color: #cccccc;
+    color: #666666;
+    cursor: not-allowed;
+}

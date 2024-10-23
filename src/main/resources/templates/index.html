@@ -52,17 +52,20 @@
 						<div class="progress-message-container">
 							<div class="progress-ring-container">
 								<svg class="progress-ring" width="120" height="120">
-                                <circle
-										class="progress-ring__background" stroke="#d3d3d3"
-										stroke-width="8" fill="transparent" r="52" cx="60" cy="60" />
-                                <circle class="progress-ring__circle"
-										stroke="blue" stroke-width="8" fill="transparent" r="52"
+                <circle class="progress-ring__background"
+										stroke="#d3d3d3" stroke-width="8" fill="transparent" r="52"
 										cx="60" cy="60" />
-                            </svg>
+                <circle class="progress-ring__circle" stroke="blue"
+										stroke-width="8" fill="transparent" r="52" cx="60" cy="60" />
+            </svg>
 								<span class="progress-ring__text">0%</span>
 							</div>
-							<!-- Area to display only the latest message -->
+
 							<div id="message-area"></div>
+
+							<!-- Link to the folder where the report is saved -->
+							<a id="report-link" href="file:///C:/Users/Reports/"
+								style="display: none;" target="_blank">Open Report Folder</a>
 						</div>
 					</div>
 				</div>
@@ -135,7 +138,7 @@
 		}
 	</script>
 
-<script>
+	<script>
     const progressCircle = document.querySelector('.progress-ring__circle');
     const progressText = document.querySelector('.progress-ring__text');
     const messageArea = document.getElementById('message-area');
@@ -183,17 +186,21 @@
     });
 </script>
 
-<script src="https://cdn.jsdelivr.net/sockjs/1.0.0/sockjs.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/sockjs/1.0.0/sockjs.min.js"></script>
+	<script
+		src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
 
-<script>
+	<script>
     let stompClient = null;
+    let isCancelled = false;
 
     const progressCircle = document.querySelector('.progress-ring__circle');
     const progressText = document.querySelector('.progress-ring__text');
     const messageArea = document.getElementById('message-area');
     const validateBtn = document.getElementById('validate-btn');
     const cancelBtn = document.getElementById('cancel-btn');
+    const fileInput = document.querySelector('input[type="file"]');
+    const reportLink = document.getElementById('report-link');  // Hyperlink to the report folder
 
     const radius = progressCircle.r.baseVal.value;
     const circumference = 2 * Math.PI * radius;
@@ -205,11 +212,31 @@
         const offset = circumference - (percent / 100) * circumference;
         progressCircle.style.strokeDashoffset = offset;
         progressText.textContent = `${percent}%`;
+
+        // If validation is complete, reset the buttons and file input
+        if (percent === 100) {
+            resetUIAfterCompletion();
+        }
     }
 
-    function displayLatestMessage(message) {
+    function displayLatestMessage(message, error = false) {
         messageArea.style.display = "block";
         messageArea.textContent = message;
+
+        if (error) {
+            messageArea.style.backgroundColor = "#f8d7da";
+            messageArea.style.color = "#721c24";
+        } else {
+            messageArea.style.backgroundColor = "#d4edda";
+            messageArea.style.color = "#155724";
+        }
+    }
+
+    function resetUIAfterCompletion() {
+        validateBtn.disabled = false;  // Re-enable Validate button
+        cancelBtn.style.display = "none";  // Hide Cancel button
+        fileInput.disabled = false;  // Allow user to select a new file
+        reportLink.style.display = "block";  // Show report link
     }
 
     function connect() {
@@ -222,6 +249,8 @@
                 const type = data[0];
                 const content = data[1];
                 
+                if (isCancelled) return;  // Prevent further actions if cancelled
+
                 if (type === "progress") {
                     setProgress(parseInt(content));
                 } else if (type === "message") {
@@ -238,13 +267,26 @@
         console.log("Disconnected");
     }
 
-    document.querySelector("button[type='button']").addEventListener('click', function() {
+    // Function to cancel validation
+    function cancelProcess() {
+        isCancelled = true;  // Mark process as cancelled
+        disconnect();  // Disconnect WebSocket on cancel
+        validateBtn.disabled = false;  // Re-enable Validate button
+        cancelBtn.style.display = "none";  // Hide Cancel button
+        displayLatestMessage("User cancelled the process.");
+    }
+
+    // Handle Validate button click
+    validateBtn.addEventListener('click', function() {
+        isCancelled = false;
         connect();  // Establish WebSocket connection when validation starts
         validateBtn.disabled = true;  // Disable Validate button during processing
+        cancelBtn.style.display = "block";  // Show Cancel button during processing
+        fileInput.disabled = true;  // Disable file input during validation
         
         // Simulate form submission to trigger validation in backend
         const formData = new FormData();
-        formData.append('file', document.querySelector('input[type="file"]').files[0]);
+        formData.append('file', fileInput.files[0]);
 
         fetch('/validate-excel', {
             method: 'POST',
@@ -254,13 +296,9 @@
         });
     });
 
-    cancelBtn.addEventListener('click', function() {
-        disconnect();  // Disconnect WebSocket on cancel
-        validateBtn.disabled = false;  // Re-enable Validate button
-        cancelBtn.style.display = "none";  // Hide Cancel button
-        displayLatestMessage("User cancelled the process.");
-    });
+    cancelBtn.addEventListener('click', cancelProcess);
 </script>
+
 
 </body>
 </html>
