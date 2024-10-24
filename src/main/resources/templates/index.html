@@ -404,6 +404,84 @@
     });
 </script>
 
+//****************************** new
+
+<script>
+    function peerreview_validate() {
+        const validateBtn = document.querySelector('button[onclick="peerreview_validate()"]');
+        const changeFileUpload = document.getElementById('changeFile-upload');
+        const messageArea = document.getElementById('message-area');
+        const openFolderBtn = document.getElementById('open-folder-btn');
+        const fileInput = document.getElementById('changeFile-upload');  // File input element
+
+        const progressCircle = document.querySelector('.progress-ring__circle');
+        const progressText = document.querySelector('.progress-ring__text');
+
+        const radius = progressCircle.r.baseVal.value;
+        const circumference = 2 * Math.PI * radius;
+
+        progressCircle.style.strokeDasharray = `${circumference} ${circumference}`;
+        progressCircle.style.strokeDashoffset = circumference;
+
+        function setProgress(percent) {
+            const offset = circumference - (percent / 100) * circumference;
+            progressCircle.style.strokeDashoffset = offset;
+            progressText.textContent = `${percent}%`;
+
+            // Check if progress is 100%
+            if (percent === 100) {
+                resetUIAfterCompletion();  // Reset UI after 100% completion
+            }
+        }
+
+        function resetUIAfterCompletion() {
+            // Clear the file input field
+            changeFileUpload.value = '';
+            
+            // Enable the Validate button and file input field
+            validateBtn.disabled = false;
+            changeFileUpload.disabled = false;
+        }
+
+        function displayLatestMessage(message) {
+            messageArea.style.display = "block";
+
+            // Check if the message contains a link
+            if (message.startsWith("link:")) {
+                let networkPath = message.replace("link:", "").trim();
+                openFolderBtn.style.display = "block";
+                openFolderBtn.addEventListener('click', function() {
+                    window.open(networkPath);
+                });
+            } else {
+                messageArea.textContent = message;
+            }
+        }
+
+        // Disable the Validate button and file input field during validation
+        validateBtn.disabled = true;
+        changeFileUpload.disabled = true;
+
+        // Prepare the form data for file upload
+        const formData = new FormData();
+        formData.append('file', fileInput.files[0]);  // Add the selected file
+
+        // Send the request to the backend via fetch API
+        fetch('/validate-excel', {
+            method: 'POST',
+            body: formData
+        }).then(response => response.text()).then(text => {
+            console.log(text);
+            // Simulate backend progress update (replace this with actual backend progress logic)
+            setProgress(100);  // Set progress to 100% for demo purposes
+        }).catch(error => {
+            console.error("Error:", error);
+            resetUIAfterCompletion();  // Reset UI on error
+        });
+    }
+</script>
+
+
 
 
 </body>
