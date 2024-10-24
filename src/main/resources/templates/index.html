@@ -35,6 +35,9 @@
 					<div class="right-section">
 						<h3>Explanation / Summary</h3>
 						<p>[Change File usage Content will go here]</p>
+						<!-- Report Link -->
+<a id="report-link" href="#" target="_blank" style="display: none;">Open Report Folder</a>
+						
 					</div>
 					<div class="right-section">
 						<h3>Utility</h3>
@@ -219,16 +222,17 @@
         }
     }
 
-    function displayLatestMessage(message, error = false) {
+    function displayLatestMessage(message) {
         messageArea.style.display = "block";
-        messageArea.textContent = message;
 
-        if (error) {
-            messageArea.style.backgroundColor = "#f8d7da";
-            messageArea.style.color = "#721c24";
+        // Check if the message contains a link (network path)
+        if (message.startsWith("link:")) {
+            let networkPath = message.replace("link:", "").trim();
+            reportLink.href = networkPath;
+            reportLink.textContent = "Open Report Folder";
+            reportLink.style.display = "block";  // Show the report link
         } else {
-            messageArea.style.backgroundColor = "#d4edda";
-            messageArea.style.color = "#155724";
+            messageArea.textContent = message;
         }
     }
 
