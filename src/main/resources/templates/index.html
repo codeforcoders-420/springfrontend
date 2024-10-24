@@ -37,6 +37,7 @@
 						<p>[Change File usage Content will go here]</p>
 						<!-- Report Link -->
 <a id="report-link" href="#" target="_blank" style="display: none;">Open Report Folder</a>
+<button id="open-folder-btn" style="display: none;">Open Report Folder</button>
 						
 					</div>
 					<div class="right-section">
@@ -225,12 +226,16 @@
     function displayLatestMessage(message) {
         messageArea.style.display = "block";
 
-        // Check if the message contains a link (network path)
+        // Check if the message contains a link
         if (message.startsWith("link:")) {
             let networkPath = message.replace("link:", "").trim();
-            reportLink.href = networkPath;
-            reportLink.textContent = "Open Report Folder";
-            reportLink.style.display = "block";  // Show the report link
+
+            // Enable the button and set the action to open the folder
+            let openFolderBtn = document.getElementById('open-folder-btn');
+            openFolderBtn.style.display = "block";
+            openFolderBtn.addEventListener('click', function() {
+                window.open(networkPath);
+            });
         } else {
             messageArea.textContent = message;
         }

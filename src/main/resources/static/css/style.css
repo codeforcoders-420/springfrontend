@@ -391,3 +391,31 @@ button:disabled {
     color: #666666;
     cursor: not-allowed;
 }
+
+#open-folder-btn {
+    background-color: #28a745;  /* Green background */
+    color: white;               /* White text */
+    border: none;
+    padding: 10px 20px;         /* Add some padding */
+    font-size: 16px;            /* Adjust font size */
+    border-radius: 4px;         /* Rounded corners */
+    cursor: pointer;            /* Pointer cursor on hover */
+    margin-top: 20px;           /* Add some space above the button */
+    display: none;              /* Hidden by default */
+}
+
+#open-folder-btn:hover {
+    background-color: #218838;  /* Darker green on hover */
+}
+
+#link-display {
+    margin-top: 20px;
+}
+
+#file-path {
+    width: 100%;
+    padding: 10px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
