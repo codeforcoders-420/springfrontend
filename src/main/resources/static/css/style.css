@@ -394,28 +394,26 @@ button:disabled {
 
 #open-folder-btn {
     background-color: #28a745;  /* Green background */
-    color: white;               /* White text */
+    color: white;
     border: none;
-    padding: 10px 20px;         /* Add some padding */
-    font-size: 16px;            /* Adjust font size */
-    border-radius: 4px;         /* Rounded corners */
-    cursor: pointer;            /* Pointer cursor on hover */
-    margin-top: 20px;           /* Add some space above the button */
-    display: none;              /* Hidden by default */
+    padding: 10px 20px;
+    font-size: 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 20px;
+    display: none;  /* Initially hidden */
 }
 
 #open-folder-btn:hover {
-    background-color: #218838;  /* Darker green on hover */
+    background-color: #218838;
 }
 
-#link-display {
+#message-area {
     margin-top: 20px;
-}
-
-#file-path {
-    width: 100%;
     padding: 10px;
-    font-size: 14px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+    border-radius: 5px;
+    display: none;  /* Initially hidden */
 }

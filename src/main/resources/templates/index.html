@@ -308,6 +308,36 @@
     cancelBtn.addEventListener('click', cancelProcess);
 </script>
 
+<script>
+    const messageArea = document.getElementById('message-area');
+    const openFolderBtn = document.getElementById('open-folder-btn');
+
+    function displayLatestMessage(message) {
+        messageArea.style.display = "block";  // Show the message area
+
+        // Check if the message contains a link to the report folder
+        if (message.startsWith("link:")) {
+            // Extract the file path from the message
+            let networkPath = message.replace("link:", "").trim();
+            
+            // Enable the button and set its action to open the folder
+            openFolderBtn.style.display = "block";  // Show the button
+            openFolderBtn.addEventListener('click', function() {
+                window.open(networkPath);  // Open the folder in a new window or tab
+            });
+        } else {
+            // If the message is not a link, display it as normal
+            messageArea.textContent = message;
+        }
+    }
+
+    // Simulate receiving a message from the backend
+    // Example: Simulating the backend sending a link
+    setTimeout(() => {
+        displayLatestMessage('link:file://day04/automation/reports/output');
+    }, 1000);  // Simulate delay before receiving the message
+</script>
+
 
 </body>
 </html>
