@@ -338,6 +338,73 @@
     }, 1000);  // Simulate delay before receiving the message
 </script>
 
+// ***************************
+
+<script>
+    const validateBtn = document.getElementById('validate-btn');
+    const changeFileUpload = document.getElementById('changeFile-upload');
+    const messageArea = document.getElementById('message-area');
+    const openFolderBtn = document.getElementById('open-folder-btn');
+
+    const progressCircle = document.querySelector('.progress-ring__circle');
+    const progressText = document.querySelector('.progress-ring__text');
+
+    const radius = progressCircle.r.baseVal.value;
+    const circumference = 2 * Math.PI * radius;
+
+    progressCircle.style.strokeDasharray = `${circumference} ${circumference}`;
+    progressCircle.style.strokeDashoffset = circumference;
+
+    function setProgress(percent) {
+        const offset = circumference - (percent / 100) * circumference;
+        progressCircle.style.strokeDashoffset = offset;
+        progressText.textContent = `${percent}%`;
+
+        // Check if progress is 100%
+        if (percent === 100) {
+            resetUIAfterCompletion();  // Reset UI after 100% completion
+        }
+    }
+
+    function resetUIAfterCompletion() {
+        // Clear the file input field
+        changeFileUpload.value = '';
+        
+        // Enable the Validate button and file input field
+        validateBtn.disabled = false;
+        changeFileUpload.disabled = false;
+    }
+
+    function displayLatestMessage(message) {
+        messageArea.style.display = "block";
+
+        // Check if the message contains a link
+        if (message.startsWith("link:")) {
+            let networkPath = message.replace("link:", "").trim();
+            openFolderBtn.style.display = "block";
+            openFolderBtn.addEventListener('click', function() {
+                window.open(networkPath);
+            });
+        } else {
+            messageArea.textContent = message;
+        }
+    }
+
+    // Handle the Validate button click
+    validateBtn.addEventListener('click', function() {
+        // Disable Validate button and file input during validation
+        validateBtn.disabled = true;
+        changeFileUpload.disabled = true;
+
+        // Simulate sending request to backend (replace with actual logic)
+        setTimeout(() => {
+            // Simulate backend progress update
+            setProgress(100);  // Set progress to 100% for demo purposes
+        }, 2000);  // Simulate delay
+    });
+</script>
+
+
 
 </body>
 </html>
