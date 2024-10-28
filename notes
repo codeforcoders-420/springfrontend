@@ -1,124 +1,33 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Progress Circle</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.util.UUID;
 
-    <div class="container">
-        <!-- Header -->
-        <div class="header">
-            <h1>MN End to End Workflow</h1>
-        </div>
+public class ExcelProcessor {
 
-        <div class="content">
-            <div class="right-pane">
-                <div class="right-section">
-                    <!-- Place cancel button above the utility section -->
-                    <div class="cancel-container">
-                        <button id="cancel-btn" type="button" style="display: none;">X</button>
-                    </div>
+    private static final String TEMPLATE_PATH = "path/to/output_template.xlsx";
+    private static final String TEMP_DIR = "path/to/temp/";
 
-                    <h3>Utility</h3>
-                    <form>
-                        <button id="validate-btn" type="button">Validate</button>
-                    </form>
+    public File processUserExcel(File userExcel) throws IOException {
+        // Generate unique identifier for this user session
+        String sessionId = UUID.randomUUID().toString();
 
-                    <div class="progress-message-container">
-                        <div class="progress-ring-container">
-                            <svg class="progress-ring" width="120" height="120">
-                                <circle class="progress-ring__background" stroke="#d3d3d3" stroke-width="8" fill="transparent" r="52" cx="60" cy="60"/>
-                                <circle class="progress-ring__circle" stroke="blue" stroke-width="8" fill="transparent" r="52" cx="60" cy="60"/>
-                            </svg>
-                            <span class="progress-ring__text">0%</span>
-                        </div>
-                        <!-- Area to display only the latest message -->
-                        <div id="message-area"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+        // Define path for temporary copy
+        Path tempFilePath = Path.of(TEMP_DIR, "output_template_" + sessionId + ".xlsx");
 
-    <script>
-        let socket;
-        let isCancelled = false;
+        // Copy the template to create a unique file for this session
+        Files.copy(Path.of(TEMPLATE_PATH), tempFilePath, StandardCopyOption.REPLACE_EXISTING);
 
-        const progressCircle = document.querySelector('.progress-ring__circle');
-        const progressText = document.querySelector('.progress-ring__text');
-        const messageArea = document.getElementById('message-area');
-        const validateBtn = document.getElementById('validate-btn');
-        const cancelBtn = document.getElementById('cancel-btn');
+        // Perform write operations on this temp file
+        // Example: Write some data to the tempFilePath
+        writeDataToExcel(tempFilePath.toFile(), userExcel);
 
-        const radius = progressCircle.r.baseVal.value;
-        const circumference = 2 * Math.PI * radius;
+        return tempFilePath.toFile();
+    }
 
-        progressCircle.style.strokeDasharray = `${circumference} ${circumference}`;
-        progressCircle.style.strokeDashoffset = circumference;
-
-        function setProgress(percent) {
-            const offset = circumference - (percent / 100) * circumference;
-            progressCircle.style.strokeDashoffset = offset;
-            progressText.textContent = `${percent}%`;
-        }
-
-        function displayLatestMessage(message, error = false) {
-            messageArea.style.display = "block";
-            messageArea.textContent = message;
-
-            if (error) {
-                messageArea.style.backgroundColor = "#f8d7da";
-                messageArea.style.color = "#721c24";
-            } else {
-                messageArea.style.backgroundColor = "#d4edda";
-                messageArea.style.color = "#155724";
-            }
-        }
-
-        function updateProgress() {
-            socket = new WebSocket("ws://localhost:8080/progress-websocket");
-
-            socket.onmessage = function(event) {
-                const data = event.data.split(":");
-                const type = data[0];
-                const content = data[1];
-
-                if (isCancelled) return;  // Prevent further actions if cancelled
-
-                if (type === "progress") {
-                    setProgress(parseInt(content));
-                } else if (type === "message") {
-                    displayLatestMessage(content);
-                }
-            };
-
-            socket.onclose = function() {
-                validateBtn.disabled = false;  // Re-enable Validate button after completion
-                cancelBtn.style.display = "none";  // Hide Cancel button after completion
-                console.log("WebSocket connection closed");
-            };
-        }
-
-        function cancelProcess() {
-            isCancelled = true;  // Mark process as cancelled
-            socket.close();  // Close WebSocket connection
-            displayLatestMessage("User Cancelled the request", true);
-            validateBtn.disabled = false;  // Re-enable Validate button
-            cancelBtn.style.display = "none";  // Hide Cancel button
-        }
-
-        validateBtn.addEventListener('click', function() {
-            isCancelled = false;
-            updateProgress();
-            validateBtn.disabled = true;  // Disable Validate button during processing
-            cancelBtn.style.display = "block";  // Show Cancel button during processing
-        });
-
-        cancelBtn.addEventListener('click', cancelProcess);
-    </script>
-
-</body>
-</html>
+    private void writeDataToExcel(File tempFile, File userExcel) {
+        // Implement your logic to write data to the tempFile based on the userExcel input
+    }
+}
