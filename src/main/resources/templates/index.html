@@ -13,9 +13,9 @@
 			<h1>MN End to End Workflow</h1>
 		</div>
 		<div class="header-right">
-			<span class="user-name">Raja Murugan</span><br> <span
-				class="user-role">Role (Analyst)</span>
-		</div>
+    <span class="user-name" id="user-name">Loading...</span><br>
+    <span class="user-role">Role (Analyst)</span>
+</div>
 	</div>
 
 	<div class="container">
@@ -307,6 +307,18 @@
     });
 
     cancelBtn.addEventListener('click', cancelProcess);
+</script>
+
+<script>
+    // Fetch the username from the backend and update the header section
+    fetch('/api/username')
+        .then(response => response.text())
+        .then(username => {
+            document.getElementById('user-name').textContent = username;
+        })
+        .catch(error => {
+            console.error("Error fetching username:", error);
+        });
 </script>
 
 

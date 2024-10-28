@@ -22,4 +22,9 @@ public class ExcelController {
         excelReaderService.validateExcelFile(file);
         return ResponseEntity.ok("Validation started");
     }
+    
+    @GetMapping("/api/username")
+    public String getUsername() {
+        return System.getProperty("user.name");  // Get the system username
+    }
 }
