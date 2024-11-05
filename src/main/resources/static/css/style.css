@@ -391,3 +391,134 @@ button:disabled {
     color: #666666;
     cursor: not-allowed;
 }
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    background-color: #f4f4f4;
+    padding: 20px;
+}
+
+.container {
+    max-width: 1200px;
+    margin: auto;
+    background-color: #fff;
+    padding: 20px;
+    border: 1px solid #ddd;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.header-left {
+    max-width: 50%;
+}
+
+.header-left h2 {
+    font-size: 18px;
+    color: #333;
+}
+
+.header-left p {
+    font-size: 14px;
+    color: #555;
+}
+
+.calendar img {
+    width: 150px;
+    height: auto;
+    margin-top: 10px;
+}
+
+.header-right h1 {
+    font-size: 28px;
+    color: #4a90e2;
+}
+
+.story-sections {
+    display: flex;
+    justify-content: space-between;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.story-box {
+    background-color: #f0f0f0;
+    padding: 15px;
+    width: 30%;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.story-box h3 {
+    background-color: #4a90e2;
+    color: #fff;
+    padding: 10px;
+    border-radius: 5px;
+    font-size: 16px;
+    margin-bottom: 10px;
+}
+
+.story-box ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+.story-box ul li {
+    padding: 5px 0;
+}
+
+.story-box ul li a {
+    color: #333;
+    text-decoration: none;
+}
+
+.story-box ul li a:hover {
+    color: #4a90e2;
+    text-decoration: underline;
+}
+
+.tools-section {
+    margin-top: 20px;
+    text-align: center;
+}
+
+.tools-section h3 {
+    font-size: 18px;
+    margin-bottom: 10px;
+}
+
+.tools {
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    gap: 10px;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.tools button {
+    background-color: #4a90e2;
+    border: none;
+    padding: 10px 15px;
+    font-size: 14px;
+    border-radius: 4px;
+    cursor: pointer;
+    color: #fff;
+    width: 100%;
+    max-width: 180px;
+}
+
+.tools button:hover {
+    background-color: #2e68a3;
+}

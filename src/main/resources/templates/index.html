@@ -3,324 +3,178 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>End to End Workflow</title>
-<link rel="stylesheet" th:href="@{/css/style.css}">
+<title>Homepage</title>
+<link rel="stylesheet" th:href="@{/css/homepage.css}">
 </head>
 <body>
-
-	<div class="header">
-		<div class="header-left">
-			<h1>MN End to End Workflow</h1>
-		</div>
-		<div class="header-right">
-    <span class="user-name" id="user-name">Loading...</span><br>
-    <span class="user-role">Role (Analyst)</span>
-</div>
-	</div>
-
 	<div class="container">
-		<div class="sidebar">
-			<button class="menu-button" onclick="showSection('changeFile')">Change
-				File Generator</button>
-			<button class="menu-button" onclick="showSection('peerReview')">Peer
-				Review Validator</button>
-			<button class="menu-button" onclick="showSection('impactReport')">Impact
-				Report Generator</button>
+		<header>
+			<div class="header-left">
+				<h2>Current Week Deployment Schedule</h2>
+				<div class="calendar-container">
+					<div class="calendar">
+						<div class="calendar-header">
+							<button class="calendar-nav">◀</button>
+							<h3 id="calendar-month-year">November 2024</h3>
+							<button class="calendar-nav">▶</button>
+						</div>
+						<div class="calendar-days">
+							<div class="calendar-day">Sun</div>
+							<div class="calendar-day">Mon</div>
+							<div class="calendar-day">Tue</div>
+							<div class="calendar-day">Wed</div>
+							<div class="calendar-day">Thu</div>
+							<div class="calendar-day">Fri</div>
+							<div class="calendar-day">Sat</div>
+							<!-- Days will be generated dynamically here by JavaScript -->
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="header-right">
+				<h1>
+					Hello, <span id="user-name">Raja Murugan</span>
+				</h1>
+			</div>
+		</header>
+
+		<div class="story-sections">
+			<div class="story-box">
+				<h3>RG Stories</h3>
+				<ul>
+					<a href="/detailPage?story=123456">123456</a>
+					<li><a href="page2.html">345676</a></li>
+					<li><a href="page3.html">546732</a></li>
+					<li><a href="page4.html">354335</a></li>
+					<li><a href="page5.html">657532</a></li>
+					<li><a href="page6.html">465763</a></li>
+					<li><a href="page7.html">643634</a></li>
+				</ul>
+			</div>
+			<div class="story-box">
+				<h3>ENR Stories</h3>
+				<ul>
+					<li><a href="page1.html">123456</a></li>
+					<li><a href="page2.html">345676</a></li>
+					<li><a href="page3.html">546732</a></li>
+					<li><a href="page4.html">354335</a></li>
+					<li><a href="page5.html">657532</a></li>
+					<li><a href="page6.html">465763</a></li>
+					<li><a href="page7.html">643634</a></li>
+				</ul>
+			</div>
+			<div class="story-box">
+				<h3>BF Stories</h3>
+				<ul>
+					<li><a href="page1.html">123456</a></li>
+					<li><a href="page2.html">345676</a></li>
+					<li><a href="page3.html">546732</a></li>
+					<li><a href="page4.html">354335</a></li>
+					<li><a href="page5.html">657532</a></li>
+					<li><a href="page6.html">465763</a></li>
+					<li><a href="page7.html">643634</a></li>
+				</ul>
+			</div>
 		</div>
 
-		<div class="content">
-			<!-- Change File Generator Section -->
-			<div id="changeFile" class="section">
-				<div class="right-pane">
-					<div class="right-section">
-						<h3>Explanation / Summary</h3>
-						<p>[Change File usage Content will go here]</p>
-						<!-- Report Link -->
-<a id="report-link" href="#" target="_blank" style="display: none;">Open Report Folder</a>
-<button id="open-folder-btn" style="display: none;">Open Report Folder</button>
-						
-					</div>
-					<div class="right-section">
-						<h3>Utility</h3>
-						<form>
-							<label for="env-changeFile">Select Env:</label> <select
-								id="env-changeFile">
-								<option value="SIT">SIT</option>
-								<option value="PROD">PROD</option>
-							</select> <label for="changeFile-upload">Select Change File:</label> <input
-								type="file" id="changeFile-upload">
-
-							<button type="button">Validate</button>
-						</form>
-						<!-- Flex container to hold both the progress circle and message -->
-						<div class="progress-message-container">
-							<div class="progress-ring-container">
-								<svg class="progress-ring" width="120" height="120">
-                <circle class="progress-ring__background"
-										stroke="#d3d3d3" stroke-width="8" fill="transparent" r="52"
-										cx="60" cy="60" />
-                <circle class="progress-ring__circle" stroke="blue"
-										stroke-width="8" fill="transparent" r="52" cx="60" cy="60" />
-            </svg>
-								<span class="progress-ring__text">0%</span>
-							</div>
-
-							<div id="message-area"></div>
-
-							<!-- Link to the folder where the report is saved -->
-							<a id="report-link" href="file:///C:/Users/Reports/"
-								style="display: none;" target="_blank">Open Report Folder</a>
-						</div>
-					</div>
-				</div>
-			</div>
-
-			<!-- Peer Review Validator Section -->
-			<div id="peerReview" class="section">
-				<div class="right-pane">
-					<div class="right-section">
-						<h3>Explanation / Summary</h3>
-						<p>[PR Review validator Content will go here]</p>
-					</div>
-					<div class="right-section">
-						<h3>Utility</h3>
-						<form>
-							<label for="env-peerReview">Select Env:</label> <select
-								id="env-peerReview">
-								<option value="SIT">SIT</option>
-								<option value="PROD">PROD</option>
-							</select> <label for="peerReview-file">Select Change File:</label> <input
-								type="file" id="peerReview-file">
-
-							<button type="button">Validate</button>
-						</form>
-						<div class="progress-circle">
-							<div class="circle">
-								<span class="percentage">0%</span>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
-
-			<!-- Impact Report Generator Section -->
-			<div id="impactReport" class="section">
-				<div class="right-pane">
-					<div class="right-section">
-						<h3>Explanation / Summary</h3>
-						<p>[Impact Report Content will go here]</p>
-					</div>
-					<div class="right-section">
-						<h3>Utility</h3>
-						<form>
-							<label for="env-peerReview">Select Env:</label> <select
-								id="env-peerReview">
-								<option value="SIT">SIT</option>
-								<option value="PROD">PROD</option>
-							</select> <label for="peerReview-file">Select Change File:</label> <input
-								type="file" id="peerReview-file">
-
-							<button type="button">Validate</button>
-						</form>
-						<div class="progress-circle">
-							<div class="circle">
-								<span class="percentage">0%</span>
-							</div>
-						</div>
-					</div>
-				</div>
+		<div class="tools-section">
+			<h3>Stand-alone tools</h3>
+			<div class="tools">
+				<button>Peer Review</button>
+				<button>DB to DB</button>
+				<button>Pre-Impact</button>
+				<button>Analyst Checklist</button>
+				<button>Standard Queries</button>
+				<button>PDD</button>
+				<button>[Place Holder]</button>
 			</div>
 		</div>
 	</div>
+	<script src="script.js"></script>
 
 	<script>
-		function showSection(sectionId) {
-			document.querySelectorAll('.section').forEach(function(section) {
-				section.style.display = 'none';
-			});
-			document.getElementById(sectionId).style.display = 'block';
-		}
-	</script>
+	document.addEventListener("DOMContentLoaded", function () {
+	    renderCalendar(new Date());
+	});
 
-	<script>
-    const progressCircle = document.querySelector('.progress-ring__circle');
-    const progressText = document.querySelector('.progress-ring__text');
-    const messageArea = document.getElementById('message-area');
-    const radius = progressCircle.r.baseVal.value;
-    const circumference = 2 * Math.PI * radius;
+	function renderCalendar(currentDate) {
+	    const calendarContainer = document.querySelector(".calendar");
+	    const daysContainer = document.createElement("div");
+	    daysContainer.classList.add("calendar-days");
+	    calendarContainer.innerHTML = ""; // Clear previous content
 
-    progressCircle.style.strokeDasharray = `${circumference} ${circumference}`;
-    progressCircle.style.strokeDashoffset = circumference;
+	    // Header with navigation and current month/year
+	    const header = document.createElement("div");
+	    header.classList.add("calendar-header");
 
-    function setProgress(percent) {
-        const offset = circumference - (percent / 100) * circumference;
-        progressCircle.style.strokeDashoffset = offset;
-        progressText.textContent = `${percent}%`;
-    }
+	    const prevButton = document.createElement("button");
+	    prevButton.classList.add("calendar-nav");
+	    prevButton.textContent = "<";
+	    prevButton.onclick = () => renderCalendar(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1));
 
-    function displayLatestMessage(message) {
-        // Make the message area visible if it's hidden
-        messageArea.style.display = "block";
-        messageArea.textContent = message;  // Replace the previous message
-    }
+	    const nextButton = document.createElement("button");
+	    nextButton.classList.add("calendar-nav");
+	    nextButton.textContent = ">";
+	    nextButton.onclick = () => renderCalendar(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1));
 
-    function updateProgress() {
-        const socket = new WebSocket("ws://localhost:8080/progress-websocket");
+	    const monthYear = document.createElement("h3");
+	    monthYear.textContent = currentDate.toLocaleDateString("en-US", { month: "long", year: "numeric" });
 
-        socket.onmessage = function(event) {
-            const data = event.data.split(":");
-            const type = data[0];
-            const content = data[1];
+	    header.appendChild(prevButton);
+	    header.appendChild(monthYear);
+	    header.appendChild(nextButton);
+	    calendarContainer.appendChild(header);
 
-            if (type === "progress") {
-                setProgress(parseInt(content));
-            } else if (type === "message") {
-                displayLatestMessage(content);
-            }
-        };
+	    // Days of the week
+	    const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+	    daysOfWeek.forEach(day => {
+	        const dayElement = document.createElement("div");
+	        dayElement.classList.add("calendar-day");
+	        dayElement.textContent = day;
+	        dayElement.style.fontWeight = "bold";
+	        daysContainer.appendChild(dayElement);
+	    });
 
-        socket.onclose = function() {
-            console.log("WebSocket connection closed");
-        };
-    }
+	    // Dates
+	    const firstDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+	    const lastDay = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+	    const startDay = firstDay.getDay();
 
-    document.querySelector("button[type='button']").addEventListener('click', function() {
-        updateProgress();
-        messageArea.style.display = "block";  // Show the message area when progress starts
-    });
-</script>
+	    // Get the start of the current week
+	    const today = new Date();
+	    const currentWeekStart = new Date(today.setDate(today.getDate() - today.getDay())); // Sunday of current week
+	    const currentWeekEnd = new Date(currentWeekStart);
+	    currentWeekEnd.setDate(currentWeekStart.getDate() + 6); // Saturday of current week
 
-	<script src="https://cdn.jsdelivr.net/sockjs/1.0.0/sockjs.min.js"></script>
-	<script
-		src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+	    // Add empty placeholders for days before the first of the month
+	    for (let i = 0; i < startDay; i++) {
+	        const placeholder = document.createElement("div");
+	        placeholder.classList.add("calendar-day");
+	        daysContainer.appendChild(placeholder);
+	    }
 
-	<script>
-    let stompClient = null;
-    let isCancelled = false;
+	    // Add day numbers
+	    for (let i = 1; i <= lastDay.getDate(); i++) {
+	        const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), i);
+	        const dayElement = document.createElement("div");
+	        dayElement.classList.add("calendar-day");
+	        dayElement.textContent = i;
 
-    const progressCircle = document.querySelector('.progress-ring__circle');
-    const progressText = document.querySelector('.progress-ring__text');
-    const messageArea = document.getElementById('message-area');
-    const validateBtn = document.getElementById('validate-btn');
-    const cancelBtn = document.getElementById('cancel-btn');
-    const fileInput = document.querySelector('input[type="file"]');
-    const reportLink = document.getElementById('report-link');  // Hyperlink to the report folder
+	        // Highlight Monday, Wednesday, and Thursday if within the current week
+	        if (date >= currentWeekStart && date <= currentWeekEnd && [1, 3, 4].includes(date.getDay())) {
+	            dayElement.classList.add("highlight");
+	        }
 
-    const radius = progressCircle.r.baseVal.value;
-    const circumference = 2 * Math.PI * radius;
+	        // Highlight today's date
+	        if (i === new Date().getDate() && currentDate.getMonth() === new Date().getMonth() && currentDate.getFullYear() === new Date().getFullYear()) {
+	            dayElement.classList.add("today");
+	        }
+	        
+	        daysContainer.appendChild(dayElement);
+	    }
 
-    progressCircle.style.strokeDasharray = `${circumference} ${circumference}`;
-    progressCircle.style.strokeDashoffset = circumference;
-
-    function setProgress(percent) {
-        const offset = circumference - (percent / 100) * circumference;
-        progressCircle.style.strokeDashoffset = offset;
-        progressText.textContent = `${percent}%`;
-
-        // If validation is complete, reset the buttons and file input
-        if (percent === 100) {
-            resetUIAfterCompletion();
-        }
-    }
-
-    <script>
-    function displayLatestMessage(message) {
-        messageArea.style.display = "block";
-
-        if (message.startsWith("link:")) {
-            let networkPath = message.replace("link:", "").trim();
-
-            // Enable the button and set the action to open the folder
-            let openFolderBtn = document.getElementById('open-folder-btn');
-            openFolderBtn.style.display = "block";
-            openFolderBtn.addEventListener('click', function() {
-                window.open(networkPath);
-            });
-        } else {
-            messageArea.textContent = message;
-        }
-    }
-</script>
-
-    function resetUIAfterCompletion() {
-        validateBtn.disabled = false;  // Re-enable Validate button
-        cancelBtn.style.display = "none";  // Hide Cancel button
-        fileInput.disabled = false;  // Allow user to select a new file
-        reportLink.style.display = "block";  // Show report link
-    }
-
-    function connect() {
-        const socket = new SockJS('/progress-websocket');
-        stompClient = Stomp.over(socket);
-        stompClient.connect({}, function (frame) {
-            console.log('Connected: ' + frame);
-            stompClient.subscribe('/topic/progress', function (response) {
-                const data = response.body.split(":");
-                const type = data[0];
-                const content = data[1];
-                
-                if (isCancelled) return;  // Prevent further actions if cancelled
-
-                if (type === "progress") {
-                    setProgress(parseInt(content));
-                } else if (type === "message") {
-                    displayLatestMessage(content);
-                }
-            });
-        });
-    }
-
-    function disconnect() {
-        if (stompClient !== null) {
-            stompClient.disconnect();
-        }
-        console.log("Disconnected");
-    }
-
-    // Function to cancel validation
-    function cancelProcess() {
-        isCancelled = true;  // Mark process as cancelled
-        disconnect();  // Disconnect WebSocket on cancel
-        validateBtn.disabled = false;  // Re-enable Validate button
-        cancelBtn.style.display = "none";  // Hide Cancel button
-        displayLatestMessage("User cancelled the process.");
-    }
-
-    // Handle Validate button click
-    validateBtn.addEventListener('click', function() {
-        isCancelled = false;
-        connect();  // Establish WebSocket connection when validation starts
-        validateBtn.disabled = true;  // Disable Validate button during processing
-        cancelBtn.style.display = "block";  // Show Cancel button during processing
-        fileInput.disabled = true;  // Disable file input during validation
-        
-        // Simulate form submission to trigger validation in backend
-        const formData = new FormData();
-        formData.append('file', fileInput.files[0]);
-
-        fetch('/validate-excel', {
-            method: 'POST',
-            body: formData
-        }).then(response => response.text()).then(text => {
-            console.log(text);
-        });
-    });
-
-    cancelBtn.addEventListener('click', cancelProcess);
-</script>
-
-<script>
-    // Fetch the username from the backend and update the header section
-    fetch('/api/username')
-        .then(response => response.text())
-        .then(username => {
-            document.getElementById('user-name').textContent = username;
-        })
-        .catch(error => {
-            console.error("Error fetching username:", error);
-        });
-</script>
-
-
+	    calendarContainer.appendChild(daysContainer);
+	}
+    </script>
 </body>
 </html>

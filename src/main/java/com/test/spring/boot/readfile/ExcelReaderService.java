@@ -2,8 +2,10 @@
 package com.test.spring.boot.readfile;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 
@@ -22,19 +24,7 @@ public class ExcelReaderService {
             int totalSteps = 100;
             int currentStep = 0;
 
-            Workbook workbook = new XSSFWorkbook(file.getInputStream());
-            Sheet sheet = workbook.getSheetAt(0);
-            for (Row row : sheet) {
-                String cellValue = row.getCell(0).getStringCellValue();  
-                currentStep += 5;
-                int progressPercentage = (currentStep * 100) / totalSteps;
-
-                String message = "Processed row: " + cellValue;
-                sendProgressUpdate(progressPercentage, message);
-
-                Thread.sleep(500);  // Simulate processing
-            }
-
+           
             // Report generation logic (simplified)
             String reportPath = "C:/Users/Reports/ValidationReport.xlsx";  // Sample path
             sendProgressUpdate(100, "Validation complete! Report saved.");
@@ -49,5 +39,10 @@ public class ExcelReaderService {
         messagingTemplate.convertAndSend("/topic/progress", "progress:" + percentage);
         messagingTemplate.convertAndSend("/topic/progress", "message:" + message);
     }
+
+	public String simulateProgressTask(int progress) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }
 
