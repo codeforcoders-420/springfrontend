@@ -1,0 +1,55 @@
+// Replace 'https://target-url.com' with the actual URL of the page containing the stories.
+const targetURL = 'https://target-url.com';
+
+async function fetchStories() {
+    try {
+        // Fetch the HTML content from the URL
+        const response = await fetch(targetURL);
+        const html = await response.text();
+
+        // Create a temporary DOM element to parse the HTML
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+
+        // Select the elements containing the story items.
+        // For example, if the stories are in a table with class 'story-table', use:
+        // const storyItems = doc.querySelectorAll('.story-table tr td');
+        
+        const storyItems = doc.querySelectorAll('.story-item'); // Adjust selector as needed
+        
+        // Extract text from each story item and add it to an array
+        const stories = Array.from(storyItems).map(item => item.textContent.trim());
+
+        // Display the stories in the user box
+        const userBox = document.getElementById('user-box'); // Assuming 'user-box' is the id of the user box
+        userBox.innerHTML = ''; // Clear any previous content
+
+        // Append each story as a list item
+        stories.forEach(story => {
+            const listItem = document.createElement('li');
+            listItem.textContent = story;
+            userBox.appendChild(listItem);
+        });
+    } catch (error) {
+        console.error('Error fetching stories:', error);
+    }
+}
+
+// Call the function to fetch and display stories when the page loads
+document.addEventListener('DOMContentLoaded', fetchStories);
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Story List</title>
+</head>
+<body>
+    <h1>User Box</h1>
+    <ul id="user-box">
+        <!-- Stories will be added here by JavaScript -->
+    </ul>
+
+    <script src="script.js"></script> <!-- Link to the JavaScript file -->
+</body>
+</html>
