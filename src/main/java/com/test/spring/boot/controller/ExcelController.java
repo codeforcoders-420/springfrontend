@@ -34,15 +34,5 @@ public class ExcelController {
         return System.getProperty("user.name");  // Get the system username
     }
     
-    @GetMapping("/details")
-    public String showDetailPage(@RequestParam("id") String id) {
-        // Pass the ID or any other parameter to the detail page if needed
-        return "detailPage"; // name of the HTML file in templates
-    }
-    
-    @GetMapping("/detailPage")
-    public String showDetailPage(@RequestParam String story, Model model) {
-        model.addAttribute("story", story);
-        return "detailPage";
-    }
+
 }
