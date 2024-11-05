@@ -1,55 +1,170 @@
-// Replace 'https://target-url.com' with the actual URL of the page containing the stories.
-const targetURL = 'https://target-url.com';
-
-async function fetchStories() {
-    try {
-        // Fetch the HTML content from the URL
-        const response = await fetch(targetURL);
-        const html = await response.text();
-
-        // Create a temporary DOM element to parse the HTML
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(html, 'text/html');
-
-        // Select the elements containing the story items.
-        // For example, if the stories are in a table with class 'story-table', use:
-        // const storyItems = doc.querySelectorAll('.story-table tr td');
-        
-        const storyItems = doc.querySelectorAll('.story-item'); // Adjust selector as needed
-        
-        // Extract text from each story item and add it to an array
-        const stories = Array.from(storyItems).map(item => item.textContent.trim());
-
-        // Display the stories in the user box
-        const userBox = document.getElementById('user-box'); // Assuming 'user-box' is the id of the user box
-        userBox.innerHTML = ''; // Clear any previous content
-
-        // Append each story as a list item
-        stories.forEach(story => {
-            const listItem = document.createElement('li');
-            listItem.textContent = story;
-            userBox.appendChild(listItem);
-        });
-    } catch (error) {
-        console.error('Error fetching stories:', error);
-    }
-}
-
-// Call the function to fetch and display stories when the page loads
-document.addEventListener('DOMContentLoaded', fetchStories);
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Story List</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Homepage</title>
+    <link rel="stylesheet" th:href="@{/css/homepage.css}">
 </head>
 <body>
-    <h1>User Box</h1>
-    <ul id="user-box">
-        <!-- Stories will be added here by JavaScript -->
-    </ul>
+    <div class="container">
+        <header>
+            <div class="header-left">
+                <h2>Current Week Deployment Schedule</h2>
+                <div class="calendar-container">
+                    <div class="calendar">
+                        <div class="calendar-header">
+                            <button class="calendar-nav">◀</button>
+                            <h3 id="calendar-month-year">November 2024</h3>
+                            <button class="calendar-nav">▶</button>
+                        </div>
+                        <div class="calendar-days">
+                            <!-- Calendar days will be generated dynamically here by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="header-right">
+                <h1>Hello, <span id="user-name">Raja Murugan</span></h1>
+            </div>
+        </header>
 
-    <script src="script.js"></script> <!-- Link to the JavaScript file -->
+        <div class="story-sections">
+            <div class="story-box">
+                <h3>RG Stories</h3>
+                <ul id="rg-stories">
+                    <!-- Story links will be populated here by JavaScript -->
+                </ul>
+            </div>
+            <!-- ENR and BF Stories sections here -->
+        </div>
+
+        <div class="tools-section">
+            <h3>Stand-alone tools</h3>
+            <div class="tools">
+                <button>Peer Review</button>
+                <button>DB to DB</button>
+                <button>Pre-Impact</button>
+                <button>Analyst Checklist</button>
+                <button>Standard Queries</button>
+                <button>PDD</button>
+                <button>[Place Holder]</button>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+
+    <script>
+    // JavaScript to fetch data from the URL and populate RG Stories
+    const targetURL = 'https://example.com/api/stories'; // Replace with your actual URL
+
+    async function fetchRGStories() {
+        try {
+            const response = await fetch(targetURL);
+            const stories = await response.json(); // Adjust according to the response format
+
+            const rgStoriesList = document.getElementById('rg-stories');
+            rgStoriesList.innerHTML = ''; // Clear any previous content
+
+            stories.forEach(story => {
+                const listItem = document.createElement('li');
+                const link = document.createElement('a');
+                link.href = `/details?story=${story.id}`; // Customize the URL as needed
+                link.textContent = story.title; // Assuming `title` is the story's display name
+                listItem.appendChild(link);
+                rgStoriesList.appendChild(listItem);
+            });
+        } catch (error) {
+            console.error('Error fetching RG Stories:', error);
+        }
+    }
+
+    // Fetch and populate RG Stories when the page loads
+    document.addEventListener('DOMContentLoaded', fetchRGStories);
+
+    // Calendar rendering script
+    document.addEventListener("DOMContentLoaded", function () {
+        renderCalendar(new Date());
+    });
+
+    function renderCalendar(currentDate) {
+        const calendarContainer = document.querySelector(".calendar");
+        const daysContainer = document.createElement("div");
+        daysContainer.classList.add("calendar-days");
+        calendarContainer.innerHTML = ""; // Clear previous content
+
+        // Header with navigation and current month/year
+        const header = document.createElement("div");
+        header.classList.add("calendar-header");
+
+        const prevButton = document.createElement("button");
+        prevButton.classList.add("calendar-nav");
+        prevButton.textContent = "<";
+        prevButton.onclick = () => renderCalendar(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1));
+
+        const nextButton = document.createElement("button");
+        nextButton.classList.add("calendar-nav");
+        nextButton.textContent = ">";
+        nextButton.onclick = () => renderCalendar(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1));
+
+        const monthYear = document.createElement("h3");
+        monthYear.textContent = currentDate.toLocaleDateString("en-US", { month: "long", year: "numeric" });
+
+        header.appendChild(prevButton);
+        header.appendChild(monthYear);
+        header.appendChild(nextButton);
+        calendarContainer.appendChild(header);
+
+        // Days of the week
+        const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+        daysOfWeek.forEach(day => {
+            const dayElement = document.createElement("div");
+            dayElement.classList.add("calendar-day");
+            dayElement.textContent = day;
+            dayElement.style.fontWeight = "bold";
+            daysContainer.appendChild(dayElement);
+        });
+
+        // Dates
+        const firstDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+        const lastDay = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+        const startDay = firstDay.getDay();
+
+        // Get the start of the current week
+        const today = new Date();
+        const currentWeekStart = new Date(today.setDate(today.getDate() - today.getDay())); // Sunday of current week
+        const currentWeekEnd = new Date(currentWeekStart);
+        currentWeekEnd.setDate(currentWeekStart.getDate() + 6); // Saturday of current week
+
+        // Add empty placeholders for days before the first of the month
+        for (let i = 0; i < startDay; i++) {
+            const placeholder = document.createElement("div");
+            placeholder.classList.add("calendar-day");
+            daysContainer.appendChild(placeholder);
+        }
+
+        // Add day numbers
+        for (let i = 1; i <= lastDay.getDate(); i++) {
+            const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), i);
+            const dayElement = document.createElement("div");
+            dayElement.classList.add("calendar-day");
+            dayElement.textContent = i;
+
+            // Highlight Monday, Wednesday, and Thursday if within the current week
+            if (date >= currentWeekStart && date <= currentWeekEnd && [1, 3, 4].includes(date.getDay())) {
+                dayElement.classList.add("highlight");
+            }
+
+            // Highlight today's date
+            if (i === new Date().getDate() && currentDate.getMonth() === new Date().getMonth() && currentDate.getFullYear() === new Date().getFullYear()) {
+                dayElement.classList.add("today");
+            }
+            
+            daysContainer.appendChild(dayElement);
+        }
+
+        calendarContainer.appendChild(daysContainer);
+    }
+    </script>
 </body>
 </html>
