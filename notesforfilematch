@@ -1,0 +1,88 @@
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.sql.*;
+import java.util.HashMap;
+import java.util.Map;
+
+public class RateComparison {
+
+    // Database connection details
+    private static final String DB_URL = "jdbc:sqlserver://localhost:1433;databaseName=YourDatabase";
+    private static final String USER = "your_username";
+    private static final String PASSWORD = "your_password";
+
+    public static void main(String[] args) {
+        String filePath = "path/to/your/revised_file.xlsx";
+        Map<String, Double> revisedRates = loadRevisedRates(filePath);
+        Map<String, Double> existingRates = loadExistingRatesFromDatabase();
+        
+        compareRates(revisedRates, existingRates);
+    }
+
+    // Step 1: Load revised rates from the Excel file
+    private static Map<String, Double> loadRevisedRates(String filePath) {
+        Map<String, Double> revisedRates = new HashMap<>();
+        try (FileInputStream fis = new FileInputStream(filePath);
+             Workbook workbook = new XSSFWorkbook(fis)) {
+             
+            Sheet sheet = workbook.getSheetAt(0); // Assuming data is in the first sheet
+            for (Row row : sheet) {
+                if (row.getRowNum() == 0) continue; // Skip header row
+                
+                Cell procedureCodeCell = row.getCell(0);
+                Cell rateCell = row.getCell(1);
+                
+                String procedureCode = procedureCodeCell.getStringCellValue();
+                double rate = rateCell.getNumericCellValue();
+                
+                revisedRates.put(procedureCode, rate);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return revisedRates;
+    }
+
+    // Step 2: Load existing rates from the SQL Server database
+    private static Map<String, Double> loadExistingRatesFromDatabase() {
+        Map<String, Double> existingRates = new HashMap<>();
+        try (Connection connection = DriverManager.getConnection(DB_URL, USER, PASSWORD);
+             Statement statement = connection.createStatement()) {
+             
+            String query = "SELECT procedure_code, rate FROM procedure_code_table";
+            ResultSet rs = statement.executeQuery(query);
+            
+            while (rs.next()) {
+                String procedureCode = rs.getString("procedure_code");
+                double rate = rs.getDouble("rate");
+                
+                existingRates.put(procedureCode, rate);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return existingRates;
+    }
+
+    // Step 3: Compare rates between revised source and existing database records
+    private static void compareRates(Map<String, Double> revisedRates, Map<String, Double> existingRates) {
+        for (Map.Entry<String, Double> entry : revisedRates.entrySet()) {
+            String procedureCode = entry.getKey();
+            double revisedRate = entry.getValue();
+            
+            if (existingRates.containsKey(procedureCode)) {
+                double existingRate = existingRates.get(procedureCode);
+                
+                if (Double.compare(revisedRate, existingRate) != 0) {
+                    System.out.printf("Change found for Procedure Code: %s - Existing Rate: %.2f, Revised Rate: %.2f%n",
+                                      procedureCode, existingRate, revisedRate);
+                }
+            } else {
+                System.out.printf("New Procedure Code found: %s with Rate: %.2f%n", procedureCode, revisedRate);
+            }
+        }
+    }
+}
