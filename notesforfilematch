@@ -33,14 +33,31 @@ public class RateComparison {
                 if (row.getRowNum() == 0) continue; // Skip header row
                 
                 Cell procedureCodeCell = row.getCell(0);
-                Cell rateCell = row.getCell(1);
+                Cell modifierCell = row.getCell(1);
+                Cell rateCell = row.getCell(2);
                 
                 String procedureCode = procedureCodeCell.getStringCellValue();
-                double rate = rateCell.getNumericCellValue();
+                String modifier = modifierCell.getStringCellValue();
+                String rateValue = rateCell.getStringCellValue().trim();
                 
-                revisedRates.put(procedureCode, rate);
+                // Concatenate ProcedureCode and Modifier to form a unique key
+                String uniqueKey = procedureCode + modifier;
+                
+                // Scrub and handling conditions
+                if ("NA".equalsIgnoreCase(rateValue) || "$0".equals(rateValue)) {
+                    continue; // Ignore this PROC+MOD combination
+                }
+                
+                double rate;
+                if ("M".equalsIgnoreCase(rateValue)) {
+                    rate = 0.0; // Manual rate set to 0
+                } else {
+                    rate = Double.parseDouble(rateValue);
+                }
+                
+                revisedRates.put(uniqueKey, rate);
             }
-        } catch (IOException e) {
+        } catch (IOException | NumberFormatException e) {
             e.printStackTrace();
         }
         return revisedRates;
@@ -52,14 +69,17 @@ public class RateComparison {
         try (Connection connection = DriverManager.getConnection(DB_URL, USER, PASSWORD);
              Statement statement = connection.createStatement()) {
              
-            String query = "SELECT procedure_code, rate FROM procedure_code_table";
+            String query = "SELECT procedure_code, modifier, rate FROM procedure_code_table";
             ResultSet rs = statement.executeQuery(query);
             
             while (rs.next()) {
                 String procedureCode = rs.getString("procedure_code");
+                String modifier = rs.getString("modifier");
                 double rate = rs.getDouble("rate");
                 
-                existingRates.put(procedureCode, rate);
+                // Concatenate ProcedureCode and Modifier to form a unique key
+                String uniqueKey = procedureCode + modifier;
+                existingRates.put(uniqueKey, rate);
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -70,18 +90,18 @@ public class RateComparison {
     // Step 3: Compare rates between revised source and existing database records
     private static void compareRates(Map<String, Double> revisedRates, Map<String, Double> existingRates) {
         for (Map.Entry<String, Double> entry : revisedRates.entrySet()) {
-            String procedureCode = entry.getKey();
+            String uniqueKey = entry.getKey();
             double revisedRate = entry.getValue();
             
-            if (existingRates.containsKey(procedureCode)) {
-                double existingRate = existingRates.get(procedureCode);
+            if (existingRates.containsKey(uniqueKey)) {
+                double existingRate = existingRates.get(uniqueKey);
                 
                 if (Double.compare(revisedRate, existingRate) != 0) {
-                    System.out.printf("Change found for Procedure Code: %s - Existing Rate: %.2f, Revised Rate: %.2f%n",
-                                      procedureCode, existingRate, revisedRate);
+                    System.out.printf("Change found for Procedure Code + Modifier: %s - Existing Rate: %.2f, Revised Rate: %.2f%n",
+                                      uniqueKey, existingRate, revisedRate);
                 }
             } else {
-                System.out.printf("New Procedure Code found: %s with Rate: %.2f%n", procedureCode, revisedRate);
+                System.out.printf("New Procedure Code + Modifier found: %s with Rate: %.2f%n", uniqueKey, revisedRate);
             }
         }
     }
