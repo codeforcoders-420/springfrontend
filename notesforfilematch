@@ -64,45 +64,102 @@ public class RateComparison {
     }
 
     // Step 2: Load existing rates from the SQL Server database
-    private static Map<String, Double> loadExistingRatesFromDatabase() {
-        Map<String, Double> existingRates = new HashMap<>();
-        try (Connection connection = DriverManager.getConnection(DB_URL, USER, PASSWORD);
-             Statement statement = connection.createStatement()) {
-             
-            String query = "SELECT procedure_code, modifier, rate FROM procedure_code_table";
-            ResultSet rs = statement.executeQuery(query);
+private static Map<String, Map<String, Object>> loadExistingRatesFromDatabase() {
+    Map<String, Map<String, Object>> existingRates = new HashMap<>();
+    try (Connection connection = DriverManager.getConnection(DB_URL, USER, PASSWORD);
+         Statement statement = connection.createStatement()) {
+         
+        String query = "SELECT procedure_code, modifier, rate, eff_date, term_date FROM procedure_code_table";
+        ResultSet rs = statement.executeQuery(query);
+        
+        while (rs.next()) {
+            String procedureCode = rs.getString("procedure_code");
+            String modifier = rs.getString("modifier");
+            double rate = rs.getDouble("rate");
+            Date effDate = rs.getDate("eff_date");
+            Date termDate = rs.getDate("term_date");
             
-            while (rs.next()) {
-                String procedureCode = rs.getString("procedure_code");
-                String modifier = rs.getString("modifier");
-                double rate = rs.getDouble("rate");
-                
-                // Concatenate ProcedureCode and Modifier to form a unique key
-                String uniqueKey = procedureCode + modifier;
-                existingRates.put(uniqueKey, rate);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
+            String uniqueKey = procedureCode + modifier + rate;
+            
+            Map<String, Object> attributes = new HashMap<>();
+            attributes.put("EFF_DATE", effDate);
+            attributes.put("TERM_DATE", termDate);
+            attributes.put("RATE", rate);
+            
+            existingRates.put(uniqueKey, attributes);
         }
-        return existingRates;
+    } catch (SQLException e) {
+        e.printStackTrace();
     }
+    return existingRates;
+}
 
     // Step 3: Compare rates between revised source and existing database records
     private static void compareRates(Map<String, Double> revisedRates, Map<String, Double> existingRates) {
-        for (Map.Entry<String, Double> entry : revisedRates.entrySet()) {
-            String uniqueKey = entry.getKey();
-            double revisedRate = entry.getValue();
-            
-            if (existingRates.containsKey(uniqueKey)) {
-                double existingRate = existingRates.get(uniqueKey);
-                
-                if (Double.compare(revisedRate, existingRate) != 0) {
-                    System.out.printf("Change found for Procedure Code + Modifier: %s - Existing Rate: %.2f, Revised Rate: %.2f%n",
-                                      uniqueKey, existingRate, revisedRate);
-                }
-            } else {
-                System.out.printf("New Procedure Code + Modifier found: %s with Rate: %.2f%n", uniqueKey, revisedRate);
-            }
+	List<String[]> outputResults = new ArrayList<>();
+	
+for (Map.Entry<String, Double> entry : revisedRates.entrySet()) {
+    String uniqueKey = entry.getKey();
+    double rate = entry.getValue();
+    String assumedEffDate = "2024-01-01";
+    String assumedTermDate = "2024-03-31";
+    
+    String result = "New Code"; // Default result if no conditions match
+    
+    if (existingRates.containsKey(uniqueKey)) {
+        Map<String, Object> dbRecord = existingRates.get(uniqueKey);
+        
+        Date dbEffDate = (Date) dbRecord.get("EFF_DATE");
+        Date dbTermDate = (Date) dbRecord.get("TERM_DATE");
+        double dbRate = (double) dbRecord.get("RATE");
+        
+        if (dbEffDate.toString().equals(assumedEffDate) && dbTermDate.toString().equals(assumedTermDate) && dbRate == rate) {
+            result = "No change";
+        } else if (dbTermDate.toString().equals(assumedTermDate) && dbRate == rate) {
+            result = "No change - Eff date differ";
+        } else if (dbTermDate.toString().equals("9999-12-31") && dbRate == rate) {
+            result = "No change - Open End date";
+        } else if (existingRates.containsKey(procedureCode + modifier)) {
+            result = "Rate change";
         }
     }
+    
+    // Add the result to outputResults for writing to Excel
+    outputResults.add(new String[]{uniqueKey, String.valueOf(rate), result});
+}
+
+String outputPath = "path/to/output/comparison_results.xlsx";
+writeResultsToExcel(outputResults, outputPath);
+    }
+	
+private static void writeResultsToExcel(List<String[]> outputResults, String outputPath) {
+    try (Workbook workbook = new XSSFWorkbook()) {
+        Sheet sheet = workbook.createSheet("Comparison Results");
+
+        // Create header row
+        Row headerRow = sheet.createRow(0);
+        headerRow.createCell(0).setCellValue("Procedure Code + Modifier");
+        headerRow.createCell(1).setCellValue("Rate");
+        headerRow.createCell(2).setCellValue("Comparison Result");
+
+        // Write each result as a new row
+        int rowNum = 1;
+        for (String[] result : outputResults) {
+            Row row = sheet.createRow(rowNum++);
+            row.createCell(0).setCellValue(result[0]);
+            row.createCell(1).setCellValue(result[1]);
+            row.createCell(2).setCellValue(result[2]);
+        }
+
+        // Save the workbook to the specified output path
+        try (FileOutputStream fos = new FileOutputStream(outputPath)) {
+            workbook.write(fos);
+        }
+
+        System.out.println("Results written to Excel file: " + outputPath);
+    } catch (IOException e) {
+        e.printStackTrace();
+    }
+}	
+	
 }
