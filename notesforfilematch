@@ -132,6 +132,17 @@ String outputPath = "path/to/output/comparison_results.xlsx";
 writeResultsToExcel(outputResults, outputPath);
     }
 	
+	Cell rateCell = row.getCell(2); // Assuming the rate is in the third column
+String rateValue;
+
+if (rateCell.getCellType() == CellType.STRING) {
+    rateValue = rateCell.getStringCellValue().trim();
+} else if (rateCell.getCellType() == CellType.NUMERIC) {
+    rateValue = String.valueOf(rateCell.getNumericCellValue());
+} else {
+    rateValue = ""; // Handle any other unexpected cell types as empty or according to your requirements
+}
+	
 private static void writeResultsToExcel(List<String[]> outputResults, String outputPath) {
     try (Workbook workbook = new XSSFWorkbook()) {
         Sheet sheet = workbook.createSheet("Comparison Results");
