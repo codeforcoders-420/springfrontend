@@ -174,3 +174,85 @@ private static void writeResultsToExcel(List<String[]> outputResults, String out
 }	
 	
 }
+
+**********************
+
+private static Map<String, List<Map<String, Object>>> loadExistingRatesFromDatabase() {
+    Map<String, List<Map<String, Object>>> existingRates = new HashMap<>();
+    try (Connection connection = DriverManager.getConnection(DB_URL, USER, PASSWORD);
+         Statement statement = connection.createStatement()) {
+
+        String query = "SELECT procedure_code, modifier, rate, eff_date, term_date FROM procedure_code_table";
+        ResultSet rs = statement.executeQuery(query);
+
+        while (rs.next()) {
+            String procedureCode = rs.getString("procedure_code");
+            String modifier = rs.getString("modifier");
+            double rate = rs.getDouble("rate");
+            Date effDate = rs.getDate("eff_date");
+            Date termDate = rs.getDate("term_date");
+
+            // Use procedureCode + modifier as the unique key
+            String uniqueKey = procedureCode + modifier;
+
+            // Create a map for this record’s details
+            Map<String, Object> attributes = new HashMap<>();
+            attributes.put("RATE", rate);
+            attributes.put("EFF_DATE", effDate);
+            attributes.put("TERM_DATE", termDate);
+
+            // Add this record to the list associated with the uniqueKey
+            existingRates.computeIfAbsent(uniqueKey, k -> new ArrayList<>()).add(attributes);
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+    return existingRates;
+}
+
+
+for (Map.Entry<String, Double> entry : revisedRates.entrySet()) {
+    String uniqueKey = entry.getKey(); // This is procedureCode + modifier
+    double sourceRate = entry.getValue(); // Rate from source file
+    String assumedEffDate = "2024-01-01";
+    String assumedTermDate = "2024-03-31";
+
+    String result = "New Code"; // Default result if no conditions match
+
+    if (existingRates.containsKey(uniqueKey)) {
+        List<Map<String, Object>> dbRecords = existingRates.get(uniqueKey);
+        
+        for (Map<String, Object> dbRecord : dbRecords) {
+            double dbRate = (double) dbRecord.get("RATE");
+            Date dbEffDate = (Date) dbRecord.get("EFF_DATE");
+            Date dbTermDate = (Date) dbRecord.get("TERM_DATE");
+
+            // Step 1: Check if PROC + MOD + EFF + TERM + Rate match exactly
+            if (dbEffDate.toString().equals(assumedEffDate) && dbTermDate.toString().equals(assumedTermDate) && dbRate == sourceRate) {
+                result = "No change";
+                break;
+            }
+            // Step 2: Check if PROC + MOD + TERM + Rate match (EFF differs)
+            else if (dbTermDate.toString().equals(assumedTermDate) && dbRate == sourceRate) {
+                result = "No change - Eff date differ";
+                break;
+            }
+            // Step 3: Check if PROC + MOD + '12/31/9999' + Rate match
+            else if (dbTermDate.toString().equals("9999-12-31") && dbRate == sourceRate) {
+                result = "No change - Open End date";
+                break;
+            }
+        }
+        
+        // If no exact match found but PROC + MOD exists, it indicates a rate change
+        if ("New Code".equals(result)) {
+            result = "Rate change";
+        }
+    }
+
+    // Output or store result
+    System.out.printf("Procedure Code + Modifier: %s, Rate: %.2f - %s%n", uniqueKey, sourceRate, result);
+}
+
+
+
