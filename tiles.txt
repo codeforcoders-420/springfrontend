@@ -1,0 +1,53 @@
+ <section class="tiles-section">
+            <img src="tiles.JPG" alt="Tiles Overview" class="tiles-image">
+        </section>
+		
+
+.tile-image-container {
+    width: 300px; /* Adjust width as needed */
+    margin: 20px auto; /* Center the container */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px;
+    border-radius: 10px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    background-color: #f5f5f5; /* Light background to enhance image visibility */
+}
+
+.tile-image-container img {
+    max-width: 100%; /* Ensures the image fits within the container */
+    height: auto;
+    border-radius: 8px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .story-sections {
+        flex-direction: column;
+    }
+
+    .story-box {
+        width: 80%;
+        margin: 10px 0;
+    }
+
+    .tiles-image {
+        width: 90%;
+    }
+}		
+
+/* Tiles Section */
+.tiles-section {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+    background-color: #f0f0f0;
+}
+
+.tiles-image {
+    width: 80%;
+    height: auto;
+    border-radius: 10px;
+}
