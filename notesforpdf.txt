@@ -555,3 +555,197 @@ public class ExcelDataBatchConverter {
     }
 }
 
+*********************************************************************************************
+
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
+import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
+import java.awt.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+
+public class ExcelDataProcessor extends JFrame {
+    
+    private JTextField outputPathField;
+    
+    public ExcelDataProcessor() {
+        setTitle("Excel Data Processor");
+        setSize(400, 200);
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setLocationRelativeTo(null);
+        
+        JPanel panel = new JPanel();
+        panel.setLayout(new GridLayout(3, 1));
+        
+        JButton selectFilesButton = new JButton("Select Excel Files");
+        selectFilesButton.addActionListener(e -> selectFiles());
+        
+        outputPathField = new JTextField("Enter output path (e.g., /path/to/combined_output.xlsx)");
+        JButton generateButton = new JButton("Generate Output");
+        generateButton.addActionListener(e -> processFiles());
+
+        panel.add(selectFilesButton);
+        panel.add(outputPathField);
+        panel.add(generateButton);
+        
+        add(panel);
+    }
+
+    private void selectFiles() {
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setMultiSelectionEnabled(true);
+        fileChooser.setFileFilter(new FileNameExtensionFilter("Excel Files", "xlsx"));
+        
+        int result = fileChooser.showOpenDialog(this);
+        if (result == JFileChooser.APPROVE_OPTION) {
+            File[] selectedFiles = fileChooser.getSelectedFiles();
+            StringBuilder filesList = new StringBuilder("Selected Files:\n");
+            for (File file : selectedFiles) {
+                filesList.append(file.getName()).append("\n");
+            }
+            JOptionPane.showMessageDialog(this, filesList.toString());
+        }
+    }
+
+    private void processFiles() {
+        String outputFilePath = outputPathField.getText().trim();
+        
+        if (outputFilePath.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Please specify an output file path.");
+            return;
+        }
+
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setMultiSelectionEnabled(true);
+        fileChooser.setFileFilter(new FileNameExtensionFilter("Excel Files", "xlsx"));
+
+        int result = fileChooser.showOpenDialog(this);
+        if (result != JFileChooser.APPROVE_OPTION) {
+            JOptionPane.showMessageDialog(this, "No files selected.");
+            return;
+        }
+
+        File[] excelFiles = fileChooser.getSelectedFiles();
+
+        try {
+            Workbook outputWorkbook = new XSSFWorkbook();
+            Sheet outputSheet = outputWorkbook.createSheet("Combined Data");
+
+            Row headerRow = outputSheet.createRow(0);
+            headerRow.createCell(0).setCellValue("Code");
+            headerRow.createCell(1).setCellValue("Mod 1");
+            headerRow.createCell(2).setCellValue("Mod 2");
+            headerRow.createCell(3).setCellValue("Mod 3");
+            headerRow.createCell(4).setCellValue("Mod 4");
+            headerRow.createCell(5).setCellValue("Rate");
+            headerRow.createCell(6).setCellValue("Source File");
+
+            int outputRowNum = 1;
+
+            for (File file : excelFiles) {
+                FileInputStream inputStream = new FileInputStream(file);
+                Workbook inputWorkbook = new XSSFWorkbook(inputStream);
+                Sheet inputSheet = inputWorkbook.getSheetAt(0);
+
+                int maxColumns = 0;
+                for (int i = 0; i <= inputSheet.getLastRowNum(); i++) {
+                    Row row = inputSheet.getRow(i);
+                    if (row != null) {
+                        maxColumns = Math.max(maxColumns, row.getLastCellNum());
+                    }
+                }
+
+                for (int col = 0; col < maxColumns; col++) {
+                    for (int row = 0; row <= inputSheet.getLastRowNum(); row++) {
+                        Row currentRow = inputSheet.getRow(row);
+                        if (currentRow == null) continue;
+
+                        Cell cell = currentRow.getCell(col);
+                        if (cell == null) continue;
+
+                        if ("code".equalsIgnoreCase(normalizeWhitespace(getCellValue(cell)))) {
+                            if (isHeaderMatch(inputSheet, row, col)) {
+                                for (int dataRowNum = row + 1; dataRowNum <= inputSheet.getLastRowNum(); dataRowNum++) {
+                                    Row dataRow = inputSheet.getRow(dataRowNum);
+                                    if (dataRow == null) continue;
+
+                                    Cell codeCell = dataRow.getCell(col);
+                                    if (codeCell == null || codeCell.getCellType() == CellType.BLANK) {
+                                        break;
+                                    }
+
+                                    Row outputRow = outputSheet.createRow(outputRowNum++);
+
+                                    outputRow.createCell(0).setCellValue(getCellValue(dataRow.getCell(col)));
+                                    outputRow.createCell(1).setCellValue(getCellValue(dataRow.getCell(col + 1)));
+                                    outputRow.createCell(2).setCellValue(getCellValue(dataRow.getCell(col + 2)));
+                                    outputRow.createCell(3).setCellValue(getCellValue(dataRow.getCell(col + 3)));
+                                    outputRow.createCell(4).setCellValue(getCellValue(dataRow.getCell(col + 4)));
+                                    outputRow.createCell(5).setCellValue(getCellValue(dataRow.getCell(col + 5)));
+                                    outputRow.createCell(6).setCellValue(file.getName());
+                                }
+                            }
+                        }
+                    }
+                }
+
+                inputWorkbook.close();
+                inputStream.close();
+            }
+
+            FileOutputStream fileOut = new FileOutputStream(outputFilePath);
+            outputWorkbook.write(fileOut);
+            fileOut.close();
+            outputWorkbook.close();
+
+            JOptionPane.showMessageDialog(this, "Output file generated successfully at: " + outputFilePath);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(this, "An error occurred while processing the files.");
+        }
+    }
+
+    private static boolean isHeaderMatch(Sheet sheet, int startRow, int startCol) {
+        return "code".equalsIgnoreCase(normalizeWhitespace(getCellValue(sheet.getRow(startRow).getCell(startCol)))) &&
+               "Mod 1".equalsIgnoreCase(normalizeWhitespace(getCellValue(sheet.getRow(startRow).getCell(startCol + 1)))) &&
+               "Mod 2".equalsIgnoreCase(normalizeWhitespace(getCellValue(sheet.getRow(startRow).getCell(startCol + 2)))) &&
+               "Mod 3".equalsIgnoreCase(normalizeWhitespace(getCellValue(sheet.getRow(startRow).getCell(startCol + 3)))) &&
+               "Mod 4".equalsIgnoreCase(normalizeWhitespace(getCellValue(sheet.getRow(startRow).getCell(startCol + 4)))) &&
+               "Rate".equalsIgnoreCase(normalizeWhitespace(getCellValue(sheet.getRow(startRow).getCell(startCol + 5))));
+    }
+
+    private static String getCellValue(Cell cell) {
+        if (cell == null) return "";
+        switch (cell.getCellType()) {
+            case STRING:
+                return cell.getStringCellValue();
+            case NUMERIC:
+                return String.valueOf(cell.getNumericCellValue());
+            case BOOLEAN:
+                return String.valueOf(cell.getBooleanCellValue());
+            case FORMULA:
+                return cell.getCellFormula();
+            default:
+                return "";
+        }
+    }
+
+    private static String normalizeWhitespace(String value) {
+        if (value == null) return "";
+        return value.trim().replaceAll("\\s+", " ");
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> {
+            ExcelDataProcessor frame = new ExcelDataProcessor();
+            frame.setVisible(true);
+        });
+    }
+}
+
+
