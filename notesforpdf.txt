@@ -103,3 +103,93 @@ public class PDFTableExtractor {
     <version>5.2.3</version>
 </dependency>
 
+
+*****************************************************************************
+
+import technology.tabula.Page;
+import technology.tabula.Table;
+import technology.tabula.extractors.SpreadsheetExtractionAlgorithm;
+import technology.tabula.extractors.ExtractionAlgorithm;
+import technology.tabula.ObjectExtractor;
+import technology.tabula.PageIterator;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.List;
+
+public class PDFTableToExcel {
+    public static void main(String[] args) {
+        String pdfFilePath = "path/to/your/500-page-document.pdf";
+        String excelFilePath = "path/to/save/extracted-tables.xlsx";
+        int targetPage = 50; // Set this to the specific page you need
+
+        try {
+            // Load PDF Document
+            PDDocument document = PDDocument.load(new File(pdfFilePath));
+            ObjectExtractor extractor = new ObjectExtractor(document);
+
+            // Specify the target page for table extraction
+            Page page = extractor.extract(targetPage);
+            ExtractionAlgorithm algo = new SpreadsheetExtractionAlgorithm();
+
+            // Extract tables from the specified page
+            List<Table> tables = algo.extract(page);
+            document.close();
+
+            // Write the extracted tables to Excel
+            writeTablesToExcel(tables, excelFilePath);
+            System.out.println("Table extracted and saved to Excel successfully!");
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static void writeTablesToExcel(List<Table> tables, String excelFilePath) throws IOException {
+        Workbook workbook = new XSSFWorkbook();
+        Sheet sheet = workbook.createSheet("Extracted Table");
+
+        int rowNum = 0;
+        for (Table table : tables) {
+            for (int i = 0; i < table.getRowCount(); i++) {
+                Row row = sheet.createRow(rowNum++);
+                for (int j = 0; j < table.getColCount(); j++) {
+                    Cell cell = row.createCell(j);
+                    cell.setCellValue(table.getCell(i, j).getText());
+                }
+            }
+        }
+
+        try (FileOutputStream outputStream = new FileOutputStream(excelFilePath)) {
+            workbook.write(outputStream);
+        }
+    }
+}
+
+<dependency>
+    <groupId>org.apache.pdfbox</groupId>
+    <artifactId>pdfbox</artifactId>
+    <version>2.0.27</version>
+</dependency>
+<dependency>
+    <groupId>technology.tabula</groupId>
+    <artifactId>tabula</artifactId>
+    <version>1.0.4</version>
+</dependency>
+<dependency>
+    <groupId>org.apache.poi</groupId>
+    <artifactId>poi</artifactId>
+    <version>5.2.3</version>
+</dependency>
+<dependency>
+    <groupId>org.apache.poi</groupId>
+    <artifactId>poi-ooxml</artifactId>
+    <version>5.2.3</version>
+</dependency>
+
+
+
