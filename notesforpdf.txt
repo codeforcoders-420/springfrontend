@@ -391,6 +391,9 @@ public class ExcelDataConverter {
             case FORMULA:
                 return cell.getCellFormula();
             default:
+			
+            default:
+			
                 return "";
         }
     }
@@ -401,3 +404,154 @@ public class ExcelDataConverter {
         return value.trim().replaceAll("\\s+", " ");
     }
 }
+
+*******************************************************************************************************************
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+
+public class ExcelDataBatchConverter {
+
+    public static void main(String[] args) {
+        String inputFolderPath = "/path/to/your/folder/with/excel/files"; // Specify the folder with Excel files
+        String outputFilePath = "/path/to/output/folder/combined_output.xlsx";
+
+        try {
+            // Create the output workbook and sheet
+            Workbook outputWorkbook = new XSSFWorkbook();
+            Sheet outputSheet = outputWorkbook.createSheet("Combined Data");
+
+            // Create the header row in the output sheet
+            Row headerRow = outputSheet.createRow(0);
+            headerRow.createCell(0).setCellValue("Code");
+            headerRow.createCell(1).setCellValue("Mod 1");
+            headerRow.createCell(2).setCellValue("Mod 2");
+            headerRow.createCell(3).setCellValue("Mod 3");
+            headerRow.createCell(4).setCellValue("Mod 4");
+            headerRow.createCell(5).setCellValue("Rate");
+            headerRow.createCell(6).setCellValue("Source File");
+
+            int outputRowNum = 1; // Start writing from the second row in output
+
+            // Get all Excel files in the specified folder
+            File folder = new File(inputFolderPath);
+            File[] excelFiles = folder.listFiles((dir, name) -> name.toLowerCase().endsWith(".xlsx"));
+
+            if (excelFiles == null || excelFiles.length == 0) {
+                System.out.println("No Excel files found in the specified folder.");
+                return;
+            }
+
+            // Process each Excel file
+            for (File file : excelFiles) {
+                System.out.println("Processing file: " + file.getName());
+                FileInputStream inputStream = new FileInputStream(file);
+                Workbook inputWorkbook = new XSSFWorkbook(inputStream);
+                Sheet inputSheet = inputWorkbook.getSheetAt(0);
+
+                int maxColumns = 0;
+                for (int i = 0; i <= inputSheet.getLastRowNum(); i++) {
+                    Row row = inputSheet.getRow(i);
+                    if (row != null) {
+                        maxColumns = Math.max(maxColumns, row.getLastCellNum());
+                    }
+                }
+
+                // Column-wise search for the "code" header and subsequent "Mod" headers
+                for (int col = 0; col < maxColumns; col++) {
+                    for (int row = 0; row <= inputSheet.getLastRowNum(); row++) {
+                        Row currentRow = inputSheet.getRow(row);
+                        if (currentRow == null) continue;
+
+                        Cell cell = currentRow.getCell(col);
+                        if (cell == null) continue;
+
+                        // Check if this cell contains "code" (after normalizing whitespace)
+                        if ("code".equalsIgnoreCase(normalizeWhitespace(getCellValue(cell)))) {
+                            // Check if the following columns match "Mod 1", "Mod 2", "Mod 3", "Mod 4", "Rate"
+                            if (isHeaderMatch(inputSheet, row, col)) {
+                                // Extract data from the matched columns in the current block
+                                for (int dataRowNum = row + 1; dataRowNum <= inputSheet.getLastRowNum(); dataRowNum++) {
+                                    Row dataRow = inputSheet.getRow(dataRowNum);
+                                    if (dataRow == null) continue;
+
+                                    Cell codeCell = dataRow.getCell(col);
+                                    if (codeCell == null || codeCell.getCellType() == CellType.BLANK) {
+                                        // Stop processing this block if we encounter a blank code cell
+                                        break;
+                                    }
+
+                                    // Create a new row in the output sheet
+                                    Row outputRow = outputSheet.createRow(outputRowNum++);
+
+                                    // Copy relevant data to output sheet
+                                    outputRow.createCell(0).setCellValue(getCellValue(dataRow.getCell(col)));       // Code
+                                    outputRow.createCell(1).setCellValue(getCellValue(dataRow.getCell(col + 1)));   // Mod 1
+                                    outputRow.createCell(2).setCellValue(getCellValue(dataRow.getCell(col + 2)));   // Mod 2
+                                    outputRow.createCell(3).setCellValue(getCellValue(dataRow.getCell(col + 3)));   // Mod 3
+                                    outputRow.createCell(4).setCellValue(getCellValue(dataRow.getCell(col + 4)));   // Mod 4
+                                    outputRow.createCell(5).setCellValue(getCellValue(dataRow.getCell(col + 5)));   // Rate
+                                    outputRow.createCell(6).setCellValue(file.getName());                           // Source File
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Close the input workbook after processing
+                inputWorkbook.close();
+                inputStream.close();
+            }
+
+            // Write to the output file
+            FileOutputStream fileOut = new FileOutputStream(outputFilePath);
+            outputWorkbook.write(fileOut);
+
+            // Close the output resources
+            fileOut.close();
+            outputWorkbook.close();
+
+            System.out.println("Data has been successfully extracted from all files and written to the output file.");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // Helper method to check if the headers match the expected pattern starting from a specific row and column
+    private static boolean isHeaderMatch(Sheet sheet, int startRow, int startCol) {
+        return "code".equalsIgnoreCase(normalizeWhitespace(getCellValue(sheet.getRow(startRow).getCell(startCol)))) &&
+               "Mod 1".equalsIgnoreCase(normalizeWhitespace(getCellValue(sheet.getRow(startRow).getCell(startCol + 1)))) &&
+               "Mod 2".equalsIgnoreCase(normalizeWhitespace(getCellValue(sheet.getRow(startRow).getCell(startCol + 2)))) &&
+               "Mod 3".equalsIgnoreCase(normalizeWhitespace(getCellValue(sheet.getRow(startRow).getCell(startCol + 3)))) &&
+               "Mod 4".equalsIgnoreCase(normalizeWhitespace(getCellValue(sheet.getRow(startRow).getCell(startCol + 4)))) &&
+               "Rate".equalsIgnoreCase(normalizeWhitespace(getCellValue(sheet.getRow(startRow).getCell(startCol + 5))));
+    }
+
+    // Helper method to get cell value as String
+    private static String getCellValue(Cell cell) {
+        if (cell == null) return "";
+        switch (cell.getCellType()) {
+            case STRING:
+                return cell.getStringCellValue();
+            case NUMERIC:
+                return String.valueOf(cell.getNumericCellValue());
+            case BOOLEAN:
+                return String.valueOf(cell.getBooleanCellValue());
+            case FORMULA:
+                return cell.getCellFormula();
+            default:
+                return "";
+        }
+    }
+
+    // Helper method to normalize whitespace
+    private static String normalizeWhitespace(String value) {
+        if (value == null) return "";
+        return value.trim().replaceAll("\\s+", " ");
+    }
+}
+
