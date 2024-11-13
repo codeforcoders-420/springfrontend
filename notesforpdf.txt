@@ -274,6 +274,129 @@ public class PDFTableToExcel {
     }
 }
 
+*****************************************************************************************************
+
+package pdftpexcel.extractdatafromexcel;
+
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+
+public class ExcelDataConverter {
+
+    public static void main(String[] args) {
+    	String inputFilePath = "C:\\Users\\rajas\\Desktop\\PROV\\convertedpage1.xlsx";
+        String outputFilePath = "C:\\Users\\rajas\\Desktop\\PROV\\table1.xlsx";
+
+        try {
+            // Open the input Excel file
+            FileInputStream inputStream = new FileInputStream(inputFilePath);
+            Workbook inputWorkbook = new XSSFWorkbook(inputStream);
+            Sheet inputSheet = inputWorkbook.getSheetAt(0);
+
+            // Open the output Excel file
+            FileInputStream outputStream = new FileInputStream(outputFilePath);
+            Workbook outputWorkbook = new XSSFWorkbook(outputStream);
+            Sheet outputSheet = outputWorkbook.getSheetAt(0);
+
+            int outputRowNum = 1; // Start writing from the second row in output
+
+            // Determine the maximum number of columns in the sheet
+            int maxColumns = 0;
+            for (int i = 0; i <= inputSheet.getLastRowNum(); i++) {
+                Row row = inputSheet.getRow(i);
+                if (row != null) {
+                    maxColumns = Math.max(maxColumns, row.getLastCellNum());
+                }
+            }
+
+            // Column-wise search for the "code" header and subsequent "Mod" headers
+            for (int col = 0; col < maxColumns; col++) {
+                for (int row = 0; row <= inputSheet.getLastRowNum(); row++) {
+                    Row currentRow = inputSheet.getRow(row);
+                    if (currentRow == null) continue;
+
+                    Cell cell = currentRow.getCell(col);
+                    if (cell == null) continue;
+
+                    // Check if this cell contains "code"
+                    if ("code".equalsIgnoreCase(getCellValue(cell))) {
+                        // Check if the following columns match "Mod 1", "Mod 2", "Mod 3", "Mod 4", "Rate"
+                        if (isHeaderMatch(inputSheet, row, col)) {
+                            // Extract data from the matched columns in the current block
+                            for (int dataRowNum = row + 1; dataRowNum <= inputSheet.getLastRowNum(); dataRowNum++) {
+                                Row dataRow = inputSheet.getRow(dataRowNum);
+                                if (dataRow == null) continue;
+
+                                Cell codeCell = dataRow.getCell(col);
+                                if (codeCell == null || codeCell.getCellType() == CellType.BLANK) {
+                                    // Stop processing this block if we encounter a blank code cell
+                                    break;
+                                }
+
+                                // Create a new row in the output sheet
+                                Row outputRow = outputSheet.createRow(outputRowNum++);
+
+                                // Copy relevant data to output sheet
+                                outputRow.createCell(0).setCellValue(getCellValue(dataRow.getCell(col)));       // Code
+                                outputRow.createCell(1).setCellValue(getCellValue(dataRow.getCell(col + 1)));   // Mod 1
+                                outputRow.createCell(2).setCellValue(getCellValue(dataRow.getCell(col + 2)));   // Mod 2
+                                outputRow.createCell(3).setCellValue(getCellValue(dataRow.getCell(col + 3)));   // Mod 3
+                                outputRow.createCell(4).setCellValue(getCellValue(dataRow.getCell(col + 4)));   // Mod 4
+                                outputRow.createCell(5).setCellValue(getCellValue(dataRow.getCell(col + 5)));   // Rate
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Write to output file
+            FileOutputStream fileOut = new FileOutputStream(outputFilePath);
+            outputWorkbook.write(fileOut);
+
+            // Close resources
+            fileOut.close();
+            outputWorkbook.close();
+            inputWorkbook.close();
+
+            System.out.println("Data has been successfully extracted and written to the output file.");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // Helper method to check if the headers match the expected pattern starting from a specific row and column
+    private static boolean isHeaderMatch(Sheet sheet, int startRow, int startCol) {
+        return "code".equalsIgnoreCase(getCellValue(sheet.getRow(startRow).getCell(startCol))) &&
+               "Mod 1".equalsIgnoreCase(getCellValue(sheet.getRow(startRow).getCell(startCol + 1))) &&
+               "Mod 2".equalsIgnoreCase(getCellValue(sheet.getRow(startRow).getCell(startCol + 2))) &&
+               "Mod 3".equalsIgnoreCase(getCellValue(sheet.getRow(startRow).getCell(startCol + 3))) &&
+               "Mod 4".equalsIgnoreCase(getCellValue(sheet.getRow(startRow).getCell(startCol + 4))) &&
+               "Rate".equalsIgnoreCase(getCellValue(sheet.getRow(startRow).getCell(startCol + 5)));
+    }
+
+    // Helper method to get cell value as String
+    private static String getCellValue(Cell cell) {
+        if (cell == null) return "";
+        switch (cell.getCellType()) {
+            case STRING:
+                return cell.getStringCellValue();
+            case NUMERIC:
+                return String.valueOf(cell.getNumericCellValue());
+            case BOOLEAN:
+                return String.valueOf(cell.getBooleanCellValue());
+            case FORMULA:
+                return cell.getCellFormula();
+            default:
+                return "";
+        }
+    }
+}
+
+
 
 
 
