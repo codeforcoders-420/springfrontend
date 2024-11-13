@@ -322,8 +322,8 @@ public class ExcelDataConverter {
                     Cell cell = currentRow.getCell(col);
                     if (cell == null) continue;
 
-                    // Check if this cell contains "code"
-                    if ("code".equalsIgnoreCase(getCellValue(cell))) {
+                    // Check if this cell contains "code" (after normalizing whitespace)
+                    if ("code".equalsIgnoreCase(normalizeWhitespace(getCellValue(cell)))) {
                         // Check if the following columns match "Mod 1", "Mod 2", "Mod 3", "Mod 4", "Rate"
                         if (isHeaderMatch(inputSheet, row, col)) {
                             // Extract data from the matched columns in the current block
@@ -370,12 +370,12 @@ public class ExcelDataConverter {
 
     // Helper method to check if the headers match the expected pattern starting from a specific row and column
     private static boolean isHeaderMatch(Sheet sheet, int startRow, int startCol) {
-        return "code".equalsIgnoreCase(getCellValue(sheet.getRow(startRow).getCell(startCol))) &&
-               "Mod 1".equalsIgnoreCase(getCellValue(sheet.getRow(startRow).getCell(startCol + 1))) &&
-               "Mod 2".equalsIgnoreCase(getCellValue(sheet.getRow(startRow).getCell(startCol + 2))) &&
-               "Mod 3".equalsIgnoreCase(getCellValue(sheet.getRow(startRow).getCell(startCol + 3))) &&
-               "Mod 4".equalsIgnoreCase(getCellValue(sheet.getRow(startRow).getCell(startCol + 4))) &&
-               "Rate".equalsIgnoreCase(getCellValue(sheet.getRow(startRow).getCell(startCol + 5)));
+        return "code".equalsIgnoreCase(normalizeWhitespace(getCellValue(sheet.getRow(startRow).getCell(startCol)))) &&
+               "Mod 1".equalsIgnoreCase(normalizeWhitespace(getCellValue(sheet.getRow(startRow).getCell(startCol + 1)))) &&
+               "Mod 2".equalsIgnoreCase(normalizeWhitespace(getCellValue(sheet.getRow(startRow).getCell(startCol + 2)))) &&
+               "Mod 3".equalsIgnoreCase(normalizeWhitespace(getCellValue(sheet.getRow(startRow).getCell(startCol + 3)))) &&
+               "Mod 4".equalsIgnoreCase(normalizeWhitespace(getCellValue(sheet.getRow(startRow).getCell(startCol + 4)))) &&
+               "Rate".equalsIgnoreCase(normalizeWhitespace(getCellValue(sheet.getRow(startRow).getCell(startCol + 5))));
     }
 
     // Helper method to get cell value as String
@@ -394,9 +394,10 @@ public class ExcelDataConverter {
                 return "";
         }
     }
+
+    // Helper method to normalize whitespace
+    private static String normalizeWhitespace(String value) {
+        if (value == null) return "";
+        return value.trim().replaceAll("\\s+", " ");
+    }
 }
-
-
-
-
-
