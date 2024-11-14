@@ -1,0 +1,97 @@
+package com.test.spring.boot.readfile;
+
+import java.io.File;
+
+public class SourceFileValidation {
+
+    public void validateFiles(File lastSourceFile, File currentSourceFile) {
+        // Perform your validation logic here
+        System.out.println("Validating files: " + lastSourceFile.getName() + " and " + currentSourceFile.getName());
+        // Add actual validation logic as needed
+    }
+}
+
+*********************************************************************
+
+package com.test.spring.boot.controller;
+
+import com.test.spring.boot.readfile.SourceFileValidation;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.File;
+import java.io.IOException;
+
+@RestController
+public class FileValidationController {
+
+    private final SourceFileValidation sourceFileValidation = new SourceFileValidation();
+
+    @PostMapping("/validate-files")
+    public String validateFiles(@RequestParam("lastSourceFile") MultipartFile lastSourceFile,
+                                @RequestParam("currentSourceFile") MultipartFile currentSourceFile) {
+
+        try {
+            // Convert MultipartFile to File
+            File lastFile = new File("path/to/temp/" + lastSourceFile.getOriginalFilename());
+            File currentFile = new File("path/to/temp/" + currentSourceFile.getOriginalFilename());
+
+            lastSourceFile.transferTo(lastFile);
+            currentSourceFile.transferTo(currentFile);
+
+            // Call the validation method
+            sourceFileValidation.validateFiles(lastFile, currentFile);
+
+            return "Validation started";
+        } catch (IOException e) {
+            e.printStackTrace();
+            return "Error during file validation";
+        }
+    }
+}
+
+****************************************************************
+
+<div class="utility">
+    <label for="lastSourceFile">Select the last source file:</label>
+    <input type="file" id="lastSourceFile" accept=".xlsx, .xls">
+
+    <label for="currentSourceFile">Select the current week source file:</label>
+    <input type="file" id="currentSourceFile" accept=".xlsx, .xls">
+
+    <button id="validateButton">Validate</button>
+</div>
+
+<script>
+document.getElementById("validateButton").addEventListener("click", function() {
+    const lastSourceFile = document.getElementById("lastSourceFile").files[0];
+    const currentSourceFile = document.getElementById("currentSourceFile").files[0];
+
+    if (!lastSourceFile || !currentSourceFile) {
+        alert("Please select both files.");
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append("lastSourceFile", lastSourceFile);
+    formData.append("currentSourceFile", currentSourceFile);
+
+    fetch("/validate-files", {
+        method: "POST",
+        body: formData
+    })
+    .then(response => response.text())
+    .then(result => {
+        console.log(result);
+        alert(result);
+    })
+    .catch(error => {
+        console.error("Error:", error);
+        alert("Validation failed.");
+    });
+});
+</script>
+
+*********************************************************************
