@@ -1,0 +1,61 @@
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.util.Arrays;
+
+public class ExcelSortValues {
+    public static void main(String[] args) {
+        String inputFilePath = "Mockupdata.xlsx"; // Path to your Excel file
+        String outputFilePath = "Mockupdata_Output.xlsx"; // Output Excel file
+
+        try (FileInputStream fis = new FileInputStream(inputFilePath);
+             Workbook workbook = new XSSFWorkbook(fis)) {
+
+            // Access the first sheet
+            Sheet sheet = workbook.getSheetAt(0);
+
+            // Read cell A5
+            Row row = sheet.getRow(4); // Row index for A5 (0-based index)
+            Cell cell = row.getCell(0); // Column index for A5 (0-based index)
+
+            // Get the string value from A5
+            String cellValue = cell.getStringCellValue();
+
+            // Split the cell values into an array
+            String[] cellValues = cellValue.split(", ");
+
+            // Sort the array
+            Arrays.sort(cellValues, (a, b) -> {
+                String numA = a.substring(1).matches("\\d+") ? a.substring(1) : a;
+                String numB = b.substring(1).matches("\\d+") ? b.substring(1) : b;
+                try {
+                    return Integer.compare(Integer.parseInt(numA), Integer.parseInt(numB));
+                } catch (NumberFormatException e) {
+                    return a.compareTo(b);
+                }
+            });
+
+            // Join the sorted values into a single string
+            String sortedValues = String.join(", ", cellValues);
+
+            // Write the sorted values into cell A6
+            Row outputRow = sheet.getRow(5); // Row index for A6 (0-based index)
+            if (outputRow == null) {
+                outputRow = sheet.createRow(5); // Create row if it doesn't exist
+            }
+            Cell outputCell = outputRow.createCell(0); // Column index for A6 (0-based index)
+            outputCell.setCellValue(sortedValues);
+
+            // Save the updated workbook to a new file
+            try (FileOutputStream fos = new FileOutputStream(outputFilePath)) {
+                workbook.write(fos);
+            }
+
+            System.out.println("Sorted values written to A6: " + sortedValues);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
