@@ -1,0 +1,29 @@
+import java.io.File;
+
+public class ListExcelFiles {
+    public static void main(String[] args) {
+        // Specify the folder path
+        String folderPath = "path_to_your_folder"; // Replace with your folder path
+
+        // Create a File object for the folder
+        File folder = new File(folderPath);
+
+        // Check if the folder exists and is a directory
+        if (folder.exists() && folder.isDirectory()) {
+            // List all files in the folder
+            File[] files = folder.listFiles((dir, name) -> name.endsWith(".xls") || name.endsWith(".xlsx"));
+
+            // Check if there are any Excel files
+            if (files != null && files.length > 0) {
+                System.out.println("Excel Files in the folder:");
+                for (File file : files) {
+                    System.out.println(file.getName());
+                }
+            } else {
+                System.out.println("No Excel files found in the folder.");
+            }
+        } else {
+            System.out.println("The specified folder does not exist or is not a directory.");
+        }
+    }
+}
