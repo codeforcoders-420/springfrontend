@@ -29,8 +29,13 @@
 			<span id="peerReview-status" class="status-icon"></span>
 
 			<button class="menu-button" onclick="showSection('impactReport')">Impact
-				Report Generator</button>
+				Report</button>
+			<div class="upload-section">
+				<button id="upload-button" class="uploadbutton">Upload Latest Files</button>
+			</div>
 		</div>
+
+
 
 		<div class="content">
 			<!-- Change File Generator Section -->
@@ -401,6 +406,39 @@
 	    }, 300); // Simulate progress every 300ms
 	}
 </script>
+
+	<script>
+
+document.addEventListener("DOMContentLoaded", function () {
+    const uploadButton = document.getElementById("upload-button");
+
+    uploadButton.addEventListener("click", function () {
+        const confirmation = confirm("Do you want to upload all the latest docs to the TFS?");
+        if (confirmation) {
+            const storyNumber = getStoryNumber(); // Replace with your logic to retrieve the current story number
+            uploadToTFS(storyNumber);
+        } else {
+            console.log("Upload canceled by user.");
+        }
+    });
+});
+
+// Function to retrieve the current story number
+function getStoryNumber() {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get("storyNumber") || "Unknown"; // Retrieve 'storyNumber' from URL
+}
+
+// Function to simulate the upload process
+function uploadToTFS(storyNumber) {
+    console.log(`Uploading documents from folder: C:\\Users\\rajas\\Desktop\\TFS Search\\${storyNumber}`);
+    // Placeholder for upload functionality
+    alert(`Documents from folder: C:\\Users\\rajas\\Desktop\\TFS Search\\${storyNumber} will be uploaded to TFS.`);
+}
+
+</script>
+
+
 
 
 
