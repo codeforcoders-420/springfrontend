@@ -7,15 +7,17 @@
 <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
 <body>
-    <h1>Detail Page for Story: <span th:text="${story}"></span></h1>
+	<h1>
+		Detail Page for Story: <span th:text="${storyNumber}"></span>
+	</h1>
 	<div class="header">
 		<div class="header-left">
 			<h1>MN End to End Workflow</h1>
 		</div>
 		<div class="header-right">
-    <span class="user-name" id="user-name">Loading...</span><br>
-    <span class="user-role">Role (Analyst)</span>
-</div>
+			<span class="user-name" id="user-name">Loading...</span><br> <span
+				class="user-role">Role (Analyst)</span>
+		</div>
 	</div>
 
 	<div class="container">
@@ -24,6 +26,8 @@
 				File Generator</button>
 			<button class="menu-button" onclick="showSection('peerReview')">Peer
 				Review Validator</button>
+			<span id="peerReview-status" class="status-icon"></span>
+
 			<button class="menu-button" onclick="showSection('impactReport')">Impact
 				Report Generator</button>
 		</div>
@@ -36,36 +40,51 @@
 						<h3>Explanation / Summary</h3>
 						<p>[Change File usage Content will go here]</p>
 						<!-- Report Link -->
-<a id="report-link" href="#" target="_blank" style="display: none;">Open Report Folder</a>
-<button id="open-folder-btn" style="display: none;">Open Report Folder</button>
-						
+						<a id="report-link" href="#" target="_blank"
+							style="display: none;">Open Report Folder</a>
+						<button id="open-folder-btn" style="display: none;">Open
+							Report Folder</button>
+
 					</div>
 					<div class="right-section">
 						<h3>Utility</h3>
 						<form>
-							<label for="env-changeFile">Select Env:</label> <select
-								id="env-changeFile">
-								<option value="SIT">SIT</option>
-								<option value="PROD">PROD</option>
-							</select> <label for="changeFile-upload">Select Change File:</label> <input
-								type="file" id="changeFile-upload">
+							<!-- Dropdown for Last Source File -->
+							<label for="last-source-file">Select the Last Source File</label>
+							<select id="last-source-file" name="lastSourceFile">
+								<!-- Options will be populated dynamically -->
+								<option value="">--Select Excel File--</option>
+								<!-- Example options (These should be dynamically generated) -->
+								<!-- <option value="file1.xlsx">file1.xlsx</option>
+        <option value="file2.xlsx">file2.xlsx</option> -->
+							</select>
 
+							<!-- Dropdown for Current Week Source File -->
+							<label for="current-source-file">Select the Current Week
+								Source File</label> <select id="current-source-file"
+								name="currentSourceFile">
+								<!-- Options will be populated dynamically -->
+								<option value="">--Select Excel File--</option>
+								<!-- Example options (These should be dynamically generated) -->
+								<!-- <option value="file1.xlsx">file1.xlsx</option>
+        <option value="file2.xlsx">file2.xlsx</option> -->
+							</select>
 							<button type="button">Validate</button>
 						</form>
 						<!-- Flex container to hold both the progress circle and message -->
-						<div class="progress-message-container">
-							<div class="progress-ring-container">
-								<svg class="progress-ring" width="120" height="120">
-                <circle class="progress-ring__background"
+						<div class="fc-progress-message-container">
+							<div class="fc-progress-ring-container">
+								<svg class="fc-progress-ring" width="120" height="120">
+                <circle class="fc-progress-ring__background"
 										stroke="#d3d3d3" stroke-width="8" fill="transparent" r="52"
 										cx="60" cy="60" />
-                <circle class="progress-ring__circle" stroke="blue"
+                <circle class="fc-progress-ring__circle" stroke="blue"
 										stroke-width="8" fill="transparent" r="52" cx="60" cy="60" />
             </svg>
-								<span class="progress-ring__text">0%</span>
+								<span class="fc-progress-ring__text">0%</span>
 							</div>
 
-							<div id="message-area"></div>
+							<div id="fc-message-area"></div>
 
 							<!-- Link to the folder where the report is saved -->
 							<a id="report-link" href="file:///C:/Users/Reports/"
@@ -92,12 +111,26 @@
 							</select> <label for="peerReview-file">Select Change File:</label> <input
 								type="file" id="peerReview-file">
 
-							<button type="button">Validate</button>
+							<button type="button" id="validate-btn-src"
+								onclick="peerreviewvalidatre() ; validateChangeFile() ">Validate</button>
 						</form>
-						<div class="progress-circle">
-							<div class="circle">
-								<span class="percentage">0%</span>
+						<div class="progress-message-container">
+							<div class="progress-ring-container">
+								<svg class="progress-ring" width="120" height="120">
+                <circle class="progress-ring__background"
+										stroke="#d3d3d3" stroke-width="8" fill="transparent" r="52"
+										cx="60" cy="60" />
+                <circle class="progress-ring__circle" stroke="blue"
+										stroke-width="8" fill="transparent" r="52" cx="60" cy="60" />
+            </svg>
+								<span class="progress-ring__text">0%</span>
 							</div>
+
+							<div id="message-area"></div>
+
+							<!-- Link to the folder where the report is saved -->
+							<a id="report-link" href="file:///C:/Users/Reports/"
+								style="display: none;" target="_blank">Open Report Folder</a>
 						</div>
 					</div>
 				</div>
@@ -142,169 +175,231 @@
 		}
 	</script>
 
-	<script>
-    const progressCircle = document.querySelector('.progress-ring__circle');
-    const progressText = document.querySelector('.progress-ring__text');
-    const messageArea = document.getElementById('message-area');
-    const radius = progressCircle.r.baseVal.value;
-    const circumference = 2 * Math.PI * radius;
-
-    progressCircle.style.strokeDasharray = `${circumference} ${circumference}`;
-    progressCircle.style.strokeDashoffset = circumference;
-
-    function setProgress(percent) {
-        const offset = circumference - (percent / 100) * circumference;
-        progressCircle.style.strokeDashoffset = offset;
-        progressText.textContent = `${percent}%`;
-    }
-
-    function displayLatestMessage(message) {
-        // Make the message area visible if it's hidden
-        messageArea.style.display = "block";
-        messageArea.textContent = message;  // Replace the previous message
-    }
-
-    function updateProgress() {
-        const socket = new WebSocket("ws://localhost:8080/progress-websocket");
-
-        socket.onmessage = function(event) {
-            const data = event.data.split(":");
-            const type = data[0];
-            const content = data[1];
-
-            if (type === "progress") {
-                setProgress(parseInt(content));
-            } else if (type === "message") {
-                displayLatestMessage(content);
-            }
-        };
-
-        socket.onclose = function() {
-            console.log("WebSocket connection closed");
-        };
-    }
-
-    document.querySelector("button[type='button']").addEventListener('click', function() {
-        updateProgress();
-        messageArea.style.display = "block";  // Show the message area when progress starts
-    });
-</script>
-
 	<script src="https://cdn.jsdelivr.net/sockjs/1.0.0/sockjs.min.js"></script>
 	<script
 		src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
 
 	<script>
-    let stompClient = null;
-    let isCancelled = false;
+		function comparesrcfiles() {
 
-    const progressCircle = document.querySelector('.progress-ring__circle');
-   
+			const cmpreBtn = document.getElementById('filevalidate-btn');
+			const lastSourcefile = document.getElementById('lastSourceFile').files[0];
+			const currentSourcefile = document
+					.getElementById('currentSourceFile').files[0];
+			const fcprogressCircle = document
+					.querySelector('.fc_progress-ring__circle');
+			const fcprogressText = document
+					.querySelector('.fc-progress-ring__text');
+			const fcmessageArea = document
+					.getElementById('filecompare-message-area');
+			const radius = progressCircle.r.baseVal.value;
+			const circumference = 2 * Math.PI * radius;
 
-    const validateBtn = document.getElementById('validate-btn');
-    const cancelBtn = document.getElementById('cancel-btn');
-    const fileInput = document.querySelector('input[type="file"]');
-    const reportLink = document.getElementById('report-link');  // Hyperlink to the report folder
+			progressCircle.style.strokeDasharray = `${circumference} ${circumference}`;
+			progressCircle.style.strokeDashoffset = circumference;
 
- 
-    progressCircle.style.strokeDasharray = `${circumference} ${circumference}`;
-    progressCircle.style.strokeDashoffset = circumference;
+			function setProgress(percent) {
+				const offset = circumference - (percent / 100) * circumference;
+				progressCircle.style.strokeDashoffset = offset;
+				progressText.textContent = `${percent}%`;
 
-    function setProgress(percent) {
-        const offset = circumference - (percent / 100) * circumference;
-        progressCircle.style.strokeDashoffset = offset;
-        progressText.textContent = `${percent}%`;
+				if (percent === 100) {
+					resetUIAfterCompletion();
+				}
+			}
 
-        // If validation is complete, reset the buttons and file input
-        if (percent === 100) {
-            resetUIAfterCompletion();
-        }
-    }
-    </script>
-    <script>
-    function displayLatestMessage(message) {
-        messageArea.style.display = "block";
+			function resetUIAfterCompletion() {
+				lastSourcefile.value = '';
+				currentSourcefile.value = '';
 
-        if (message.startsWith("link:")) {
-            let networkPath = message.replace("link:", "").trim();
+				cmpreBtn.disabled = false;
+				lastSourcefile.disabled = false;
+				currentSourcefile.disabled = false;
+			}
 
-            // Enable the button and set the action to open the folder
-            let openFolderBtn = document.getElementById('open-folder-btn');
-            openFolderBtn.style.display = "block";
-            openFolderBtn.addEventListener('click', function() {
-                window.open(networkPath);
-            });
-        } else {
-            messageArea.textContent = message;
-        }
-    }
-</script>
+			function displayLatestMessage(message) {
+				// Make the message area visible if it's hidden
+				messageArea.style.display = "block";
+				messageArea.textContent = message; // Replace the previous message
+			}
+			
+			function fcnewconnect(){
+				const filecomparesocket = new SockJS('/progress-websocket');
+				const filecomparestompClient = Stomp.over(filecomparesocket);
+				filecomparestompClient.connect({}, function (frame) {
+					console.log('Connected: ' + frame);
+					filecomparestompClient.subscribe('/fctopic/progress', function (response) {
+						const data = response.body.split(":");
+						const type = data[0];
+						const content = data[1];
+						
+						if(isCancelled) return ;
+						
+						if(type === "progress") {
+							setProgress(parseInt(content));
+						}else if (type === "message"){
+							displayLatestMessage(content);
+						}
+					});
+				});
+			}
 
-    function resetUIAfterCompletion() {
-        validateBtn.disabled = false;  // Re-enable Validate button
-        cancelBtn.style.display = "none";  // Hide Cancel button
-        fileInput.disabled = false;  // Allow user to select a new file
-        reportLink.style.display = "block";  // Show report link
-    }
+           if(!lastSourcefile || !currentSourcefile){
+        	   
+        	   alert("Please select both files.");
+        	   return;
+        	   
+           }else {
+        	   cmpreBtn.disabled = true;
+        	   lastSourcefile.disabled = true ;
+        	   currentSourcefile.disabled = true;
+        	   fcnewconnect();
+        	   
+        	   const formData = new FormData();
+        	   formData.append("lastSourcefile",lastSourcefile);
+        	   formData.append("currentSourcefile",currentSourcefile);
+        	   
+        	   fetch('/validate-files', {
+        		   method: 'POST',
+        		   body: formData
+        	   }).then(response => response.text()).then(text => {
+        		   console.log(text);
+        	   }).catch(error => {
+        		   console.error("Error: ", error);
+        		   resetUIAfterCompletion();
+        	   }) 
+        	   
+        	   
+           }
+			
+		}
+	</script>
 
-    function connect() {
-        const socket = new SockJS('/progress-websocket');
-        stompClient = Stomp.over(socket);
-        stompClient.connect({}, function (frame) {
-            console.log('Connected: ' + frame);
-            stompClient.subscribe('/topic/progress', function (response) {
-                const data = response.body.split(":");
-                const type = data[0];
-                const content = data[1];
-                
-                if (isCancelled) return;  // Prevent further actions if cancelled
+	<script>
+		function peerreviewvalidatre() {
 
-                if (type === "progress") {
-                    setProgress(parseInt(content));
-                } else if (type === "message") {
-                    displayLatestMessage(content);
-                }
-            });
-        });
-    }
+			const validateBtn = document.getElementById('validate-btn-src');
+			const changeFileUpload = document.getElementById('peerReview-file');
+			const progressCircle = document
+					.querySelector('.progress-ring__circle');
+			const progressText = document
+					.querySelector('.progress-ring__text');
+			const messageArea = document
+					.getElementById('message-area');
+			const radius = progressCircle.r.baseVal.value;
+			const circumference = 2 * Math.PI * radius;
+		    const fileInput = document.getElementById('peerReview-file');
+		    const file = fileInput.files[0];
 
-    function disconnect() {
-        if (stompClient !== null) {
-            stompClient.disconnect();
-        }
-        console.log("Disconnected");
-    }
+			progressCircle.style.strokeDasharray = `${circumference} ${circumference}`;
+			progressCircle.style.strokeDashoffset = circumference;
 
-    // Function to cancel validation
-    function cancelProcess() {
-        isCancelled = true;  // Mark process as cancelled
-        disconnect();  // Disconnect WebSocket on cancel
-        validateBtn.disabled = false;  // Re-enable Validate button
-        cancelBtn.style.display = "none";  // Hide Cancel button
-        displayLatestMessage("User cancelled the process.");
-    }
+			function setProgress(percent) {
+				const offset = circumference - (percent / 100) * circumference;
+				progressCircle.style.strokeDashoffset = offset;
+				progressText.textContent = `${percent}%`;
 
-    // Handle Validate button click
-    validateBtn.addEventListener('click', function() {
-        isCancelled = false;
-        connect();  // Establish WebSocket connection when validation starts
-        validateBtn.disabled = true;  // Disable Validate button during processing
-        cancelBtn.style.display = "block";  // Show Cancel button during processing
-        fileInput.disabled = true;  // Disable file input during validation
-        
-        // Simulate form submission to trigger validation in backend
-        const formData = new FormData();
-        formData.append('file', fileInput.files[0]);
+				if (percent === 100) {
+					resetUIAfterCompletion();
+				}
+			}
 
-        fetch('/validate-excel', {
-            method: 'POST',
-            body: formData
-        }).then(response => response.text()).then(text => {
-            console.log(text);
-        });
-    });
+			function resetUIAfterCompletion() {
+				changeFileUpload.value = '';
+			
+				validateBtn.disabled = false;
+				changeFileUpload.disabled = false;
 
-    cancelBtn.addEventListener('click', cancelProcess);
+			}
+
+			function displayLatestMessage(message) {
+				// Make the message area visible if it's hidden
+				messageArea.style.display = "block";
+				messageArea.textContent = message; // Replace the previous message
+			}
+			
+			function newconnect(){
+				const peersocket = new SockJS('/progress-websocket');
+				const peerstompClient = Stomp.over(peersocket);
+				peerstompClient.connect({}, function (frame) {
+					console.log('Connected: ' + frame);
+					peerstompClient.subscribe('/topic/progress', function (response) {
+						const data = response.body.split(":");
+						const type = data[0];
+						const content = data[1];
+						
+						if(isCancelled) return ;
+						
+						if(type === "progress") {
+							setProgress(parseInt(content));
+						}else if (type === "message"){
+							displayLatestMessage(content);
+						}
+					});
+				});
+			}
+
+           if(!file){
+        	   
+        	   alert("Please select files.");
+        	   return;
+        	   
+           }else {
+        	   validateBtn.disabled = true;
+        	   changeFileUpload.disabled = true ;
+        	  
+        	   newconnect();
+        	   
+        	   const formData = new FormData();
+        	   formData.append("file",file);
+        	   
+        	   fetch('/validate-excel', {
+        		   method: 'POST',
+        		   body: formData
+        	   }).then(response => response.text()).then(text => {
+        		   console.log(text);
+        	   }).catch(error => {
+        		   console.error("Error: ", error);
+        		   resetUIAfterCompletion();
+        	   }) 
+        	   
+        	   
+           }
+			
+		}
+	</script>
+
+	<script>
+	function validateChangeFile() {
+	    // Example validation logic
+	    const progressText = document.querySelector("#peerReview .progress-ring__text");
+	    const progressCircle = document.querySelector("#peerReview .progress-ring__circle");
+	    const messageArea = document.querySelector("#peerReview #message-area");
+	    const reportLink = document.querySelector("#peerReview #report-link");
+	    const statusIcon = document.querySelector("#peerReview-status-icon"); // Status icon
+
+	    // Reset the progress and status icon
+	    progressText.innerText = "0%";
+	    const circumference = 2 * Math.PI * 52; // Assuming r=52 from SVG
+	    progressCircle.style.strokeDasharray = `${circumference} ${circumference}`;
+	    progressCircle.style.strokeDashoffset = circumference;
+	    statusIcon.classList.remove("visible");
+
+	    let progress = 0;
+	    const interval = setInterval(() => {
+	        if (progress = 100) {
+	            clearInterval(interval);
+	            messageArea.innerText = "Validation complete!";
+	            reportLink.style.display = "block"; // Show the report link
+	            statusIcon.classList.add("visible"); // Show the status icon
+	        } else {
+	            progress += 10;
+	            progressText.innerText = `${progress}%`;
+	            const offset = circumference - (progress / 100) * circumference;
+	            progressCircle.style.strokeDashoffset = offset;
+	        }
+	    }, 300); // Simulate progress every 300ms
+	}
 </script>
 
 

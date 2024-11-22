@@ -31,6 +31,32 @@
 					</div>
 				</div>
 			</div>
+
+			<div class="sccontainer">
+				<div class="search-container">
+					<label for="search-input" class="search-label">Search by
+						TFS #:</label> <input type="text" id="searchInput"
+						placeholder="Enter TFS number" class="search-input">
+					<button id="searchButton" class="search-button">Search</button>
+				</div>
+
+				<!-- Results Section -->
+				<div class="results-section">
+					<table id="resultsTable" class="result-table"
+						style="display: none;">
+						<thead>
+							<tr>
+								<th>TFS Number</th>
+								<th>Action</th>
+							</tr>
+						</thead>
+						<tbody id="resultsBody"></tbody>
+					</table>
+					<p id="message" class="message"></p>
+				</div>
+			</div>
+
+
 			<div class="header-right">
 				<h1>
 					Hello, <span id="user-name">Raja Murugan</span>
@@ -38,12 +64,14 @@
 			</div>
 		</header>
 
+
+
 		<div class="story-sections">
 			<div class="story-box">
 				<h3>RG Stories</h3>
 				<ul>
-					<a href="/details?story=123456">123456</a>
-					<li><a href="page2.html">345676</a></li>
+					<li><a href="/openRGStory?storyNumber=123456">123456</a></li>
+					<li><a href="/openRGStory?storyNumber=345676">345676</a></li>
 					<li><a href="page3.html">546732</a></li>
 					<li><a href="page4.html">354335</a></li>
 					<li><a href="page5.html">657532</a></li>
@@ -176,7 +204,97 @@
 	    calendarContainer.appendChild(daysContainer);
 	}
     </script>
-    
-    <script src="/script.js"></script>
+
+	<script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const searchButton = document.getElementById("searchButton");
+            const searchInput = document.getElementById("searchInput");
+            const resultsTable = document.getElementById("resultsTable");
+            const resultsBody = document.getElementById("resultsBody");
+            const message = document.getElementById("message");
+
+            // Event Listener for Search Button
+            searchButton.addEventListener("click", function () {
+                const folderName = searchInput.value.trim();
+                if (!folderName) {
+                    message.textContent = "Please enter a TFS # to begin search.";
+                    resultsTable.style.display = "none";
+                    return;
+                }
+
+                // Clear previous results
+                message.textContent = "";
+                resultsBody.innerHTML = "";
+
+                // Send Request to Backend
+                fetch(`/checkFolder?folderName=${folderName}`)
+                    .then((response) => {
+                        if (!response.ok) {
+                            throw new Error("Folder check failed.");
+                        }
+                        return response.json();
+                    })
+                    .then((data) => {
+                        if (data.exists) {
+                            // Folder exists
+                            resultsTable.style.display = "table";
+                            const row = document.createElement("tr");
+
+                            const tfsCell = document.createElement("td");
+                            tfsCell.textContent = folderName;
+                            row.appendChild(tfsCell);
+
+                            const actionCell = document.createElement("td");
+                            actionCell.innerHTML = "<button class='add-button' disabled>Exists</button>";
+                            row.appendChild(actionCell);
+
+                            resultsBody.appendChild(row);
+                        } else {
+                            // Folder does not exist
+                            resultsTable.style.display = "table";
+                            const row = document.createElement("tr");
+
+                            const tfsCell = document.createElement("td");
+                            tfsCell.textContent = folderName;
+                            row.appendChild(tfsCell);
+
+                            const actionCell = document.createElement("td");
+                            const addButton = document.createElement("button");
+                            addButton.className = "add-button";
+                            addButton.textContent = "Add";
+                            addButton.addEventListener("click", function () {
+                                // Add folder logic
+                                fetch(`/createFolder?folderName=${folderName}`, { method: "POST" })
+                                    .then((createResponse) => {
+                                        if (!createResponse.ok) {
+                                            throw new Error("Folder creation failed.");
+                                        }
+                                        return createResponse.text();
+                                    })
+                                    .then(() => {
+                                        alert("Folder created successfully!");
+                                        addButton.disabled = true;
+                                        addButton.textContent = "Added";
+                                    })
+                                    .catch((error) => {
+                                        console.error(error);
+                                        alert("Failed to create folder.");
+                                    });
+                            });
+                            actionCell.appendChild(addButton);
+                            row.appendChild(actionCell);
+
+                            resultsBody.appendChild(row);
+                        }
+                    })
+                    .catch((error) => {
+                        console.error(error);
+                        message.textContent = "Error occurred while searching.";
+                        resultsTable.style.display = "none";
+                    });
+            });
+        });
+    </script>
+
 </body>
 </html>

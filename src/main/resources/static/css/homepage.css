@@ -9,10 +9,14 @@ body {
 }
 
 .container {
-	width: 90%;
+	width: 90%; /* Increase width for more content space */
+	margin: auto;
+	max-width: 1200px; /* Limit max width */
+}
+
+.sccontainer {
+	width: 50%;
 	margin: 0 auto;
-	max-width: 1200px;
-	padding-bottom: 20px;
 }
 
 /* Header Section */
@@ -37,6 +41,10 @@ header {
 .header-right h1 {
 	font-size: 1.5em;
 	color: #0080ff;
+	text-align: left; /* Aligns text to the left */
+	float: right; /* Keeps it on the right side */
+	margin-top: 10px; /* Adds some space from the top */
+	margin-right: 20px; /* Adjust spacing from the edge */
 }
 
 /* Calendar Styles */
@@ -194,4 +202,162 @@ header {
 	background-color: #6a1b9a; /* Color for today's date */
 	color: #fff;
 	font-weight: bold;
+}
+
+/* Header alignment */
+header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 20px;
+}
+
+/* Calendar and tile container adjustment */
+.header-left, .tile-image-container, .header-right {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+
+.header-left {
+	flex: 1;
+	align-items: flex-start; /* Aligns to the left */
+}
+
+.tile-image-container {
+	flex: 1;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	padding: 10px;
+	max-width: 100%;
+}
+
+.tile-image-container img {
+	width: 100%;
+	height: auto;
+	max-width: 500px; /* Increased max width for readability */
+	border-radius: 8px;
+	box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+	object-fit: contain;
+}
+
+/* Center alignment for the greeting */
+.header-right {
+	flex: 1;
+	text-align: center;
+	align-items: flex-end;
+}
+
+.search-container {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	margin: 20px auto;
+	gap: 10px;
+}
+
+.search-label {
+	font-size: 16px;
+	color: #333;
+	font-weight: bold;
+}
+
+.search-input {
+	padding: 8px;
+	width: 200px;
+	border: 1px solid #ccc;
+	border-radius: 5px;
+	font-size: 14px;
+}
+
+.search-button {
+	padding: 8px 16px;
+	background-color: #4CAF50;
+	color: white;
+	border: none;
+	border-radius: 5px;
+	font-size: 14px;
+	cursor: pointer;
+	transition: background-color 0.3s ease;
+}
+
+.search-button:hover {
+	background-color: #45a049;
+}
+
+.results-section {
+	width: auto;
+	margin-top: 10px;
+	margin-left: auto;
+	margin-right: auto;
+	display: block;
+	text-align: center;
+	border-radius: 5px;
+	padding: 10px;
+	background-color: #fff;
+}
+
+.result-table {
+	margin: 0 auto; /* Center-align the table within the container */
+	border-collapse: collapse;
+	table-layout: auto;
+	width: auto;
+	background-color: #fff;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+	border-radius: 5px;
+}
+
+.result-table th, .result-table td {
+	padding: 8px 12px;
+	border: 1px solid #ddd;
+	text-align: center;
+}
+
+.result-table th {
+	background-color: #f4f4f4;
+	font-weight: bold;
+}
+
+.exists-button {
+	padding: 5px 10px;
+	background-color: #4CAF50;
+	color: white;
+	border: none;
+	border-radius: 4px;
+	cursor: pointer;
+}
+
+.exists-button:hover {
+	background-color: #45a049;
+}
+
+.message {
+	color: red;
+	font-weight: bold;
+}
+
+.add-button {
+	padding: 8px 15px;
+	background-color: #007BFF;
+	color: white;
+	border: none;
+	border-radius: 4px;
+	cursor: pointer;
+}
+
+.add-button:hover {
+	background-color: #0056b3;
+}
+
+.message-container {
+	text-align: left;
+	margin-top: 10px;
+	margin-left: 10px;
+}
+
+.message {
+	color: red;
+	font-weight: bold;
+	font-size: 14px;
 }
