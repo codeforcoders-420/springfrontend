@@ -203,3 +203,35 @@
     background-color: #0056b3;
 }
 
+<script>
+    document.getElementById("show-preview-btn").addEventListener("click", function () {
+        const previewPane = document.getElementById("preview-pane");
+        const previewFrame = document.getElementById("preview-frame");
+
+        // Fetch the file output path dynamically from the backend
+        fetch('/get-output-file-path')
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("Failed to fetch the output file path");
+                }
+                return response.text();
+            })
+            .then(filePath => {
+                // Update the iframe source with the retrieved file path
+                previewFrame.src = `file:///${filePath}`;
+
+                // Toggle the display of the preview pane
+                if (previewPane.style.display === "none" || previewPane.style.display === "") {
+                    previewPane.style.display = "block";
+                } else {
+                    previewPane.style.display = "none";
+                }
+            })
+            .catch(error => {
+                console.error("Error fetching file path:", error);
+                alert("Failed to load the preview. Please try again.");
+            });
+    });
+</script>
+
+
