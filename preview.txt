@@ -154,3 +154,52 @@
     box-shadow: 0 4px 8px rgba(0, 123, 255, 0.2);
 }
 
+<div class="right-section">
+    <h3>Explanation / Summary</h3>
+    <p>[PR Review validator Content will go here]</p>
+    <!-- Show Preview Button -->
+    <button id="show-preview-btn" class="menu-button" style="margin-top: 10px;">Show Preview</button>
+</div>
+
+
+<script>
+    document.getElementById("show-preview-btn").addEventListener("click", function () {
+        const previewPane = document.getElementById("preview-pane");
+        const previewFrame = document.getElementById("preview-frame");
+
+        // Update the iframe source dynamically (set the file path from backend response)
+        previewFrame.src = "file:///C:/Users/Reports/generated-report.xlsx";
+
+        // Toggle the display of the preview pane
+        if (previewPane.style.display === "none" || previewPane.style.display === "") {
+            previewPane.style.display = "block";
+        } else {
+            previewPane.style.display = "none";
+        }
+    });
+</script>
+
+<div id="preview-pane" style="display: none; margin-top: 20px;">
+    <h3>Preview Output</h3>
+    <iframe
+        id="preview-frame"
+        style="width: 100%; height: 500px; border: 1px solid #ccc;"
+        title="Preview Window"
+    ></iframe>
+</div>
+
+#show-preview-btn {
+    background-color: #007bff;
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+#show-preview-btn:hover {
+    background-color: #0056b3;
+}
+
