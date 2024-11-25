@@ -361,3 +361,13 @@ header {
 	font-weight: bold;
 	font-size: 14px;
 }
+
+#results-table a {
+    color: blue;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+#results-table a:hover {
+    color: darkblue;
+}

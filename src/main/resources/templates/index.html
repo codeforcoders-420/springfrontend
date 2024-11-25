@@ -206,95 +206,95 @@
     </script>
 
 	<script>
-        document.addEventListener("DOMContentLoaded", function () {
-            const searchButton = document.getElementById("searchButton");
-            const searchInput = document.getElementById("searchInput");
-            const resultsTable = document.getElementById("resultsTable");
-            const resultsBody = document.getElementById("resultsBody");
-            const message = document.getElementById("message");
+    document.addEventListener("DOMContentLoaded", function () {
+        const searchButton = document.getElementById("searchButton");
+        const searchInput = document.getElementById("searchInput");
+        const resultsTable = document.getElementById("resultsTable");
+        const resultsBody = document.getElementById("resultsBody");
+        const message = document.getElementById("message");
 
-            // Event Listener for Search Button
-            searchButton.addEventListener("click", function () {
-                const folderName = searchInput.value.trim();
-                if (!folderName) {
-                    message.textContent = "Please enter a TFS # to begin search.";
+        // Event Listener for Search Button
+        searchButton.addEventListener("click", function () {
+            const folderName = searchInput.value.trim();
+            if (!folderName) {
+                message.textContent = "Please enter a TFS # to begin search.";
+                resultsTable.style.display = "none";
+                return;
+            }
+
+            // Clear previous results
+            message.textContent = "";
+            resultsBody.innerHTML = "";
+
+            // Send Request to Backend
+            fetch(`/checkFolder?folderName=${folderName}`)
+                .then((response) => {
+                    if (!response.ok) {
+                        throw new Error("Folder check failed.");
+                    }
+                    return response.json();
+                })
+                .then((data) => {
+                    if (data.exists) {
+                        // Folder exists
+                        resultsTable.style.display = "table";
+                        const row = document.createElement("tr");
+
+                        const tfsCell = document.createElement("td");
+                        tfsCell.innerHTML = `<a href="/openRGStory?storyNumber=${folderName}">${folderName}</a>`;
+                        row.appendChild(tfsCell);
+
+                        const actionCell = document.createElement("td");
+                        actionCell.innerHTML = "<button class='add-button' disabled>Exists</button>";
+                        row.appendChild(actionCell);
+
+                        resultsBody.appendChild(row);
+                    } else {
+                        // Folder does not exist
+                        resultsTable.style.display = "table";
+                        const row = document.createElement("tr");
+
+                        const tfsCell = document.createElement("td");
+                        tfsCell.innerHTML = `<a href="/openRGStory?storyNumber=${folderName}">${folderName}</a>`;
+                        row.appendChild(tfsCell);
+
+                        const actionCell = document.createElement("td");
+                        const addButton = document.createElement("button");
+                        addButton.className = "add-button";
+                        addButton.textContent = "Add";
+                        addButton.addEventListener("click", function () {
+                            // Add folder logic
+                            fetch(`/createFolder?folderName=${folderName}`, { method: "POST" })
+                                .then((createResponse) => {
+                                    if (!createResponse.ok) {
+                                        throw new Error("Folder creation failed.");
+                                    }
+                                    return createResponse.text();
+                                })
+                                .then(() => {
+                                    alert("Folder created successfully!");
+                                    addButton.disabled = true;
+                                    addButton.textContent = "Added";
+                                })
+                                .catch((error) => {
+                                    console.error(error);
+                                    alert("Failed to create folder.");
+                                });
+                        });
+                        actionCell.appendChild(addButton);
+                        row.appendChild(actionCell);
+
+                        resultsBody.appendChild(row);
+                    }
+                })
+                .catch((error) => {
+                    console.error(error);
+                    message.textContent = "Error occurred while searching.";
                     resultsTable.style.display = "none";
-                    return;
-                }
-
-                // Clear previous results
-                message.textContent = "";
-                resultsBody.innerHTML = "";
-
-                // Send Request to Backend
-                fetch(`/checkFolder?folderName=${folderName}`)
-                    .then((response) => {
-                        if (!response.ok) {
-                            throw new Error("Folder check failed.");
-                        }
-                        return response.json();
-                    })
-                    .then((data) => {
-                        if (data.exists) {
-                            // Folder exists
-                            resultsTable.style.display = "table";
-                            const row = document.createElement("tr");
-
-                            const tfsCell = document.createElement("td");
-                            tfsCell.textContent = folderName;
-                            row.appendChild(tfsCell);
-
-                            const actionCell = document.createElement("td");
-                            actionCell.innerHTML = "<button class='add-button' disabled>Exists</button>";
-                            row.appendChild(actionCell);
-
-                            resultsBody.appendChild(row);
-                        } else {
-                            // Folder does not exist
-                            resultsTable.style.display = "table";
-                            const row = document.createElement("tr");
-
-                            const tfsCell = document.createElement("td");
-                            tfsCell.textContent = folderName;
-                            row.appendChild(tfsCell);
-
-                            const actionCell = document.createElement("td");
-                            const addButton = document.createElement("button");
-                            addButton.className = "add-button";
-                            addButton.textContent = "Add";
-                            addButton.addEventListener("click", function () {
-                                // Add folder logic
-                                fetch(`/createFolder?folderName=${folderName}`, { method: "POST" })
-                                    .then((createResponse) => {
-                                        if (!createResponse.ok) {
-                                            throw new Error("Folder creation failed.");
-                                        }
-                                        return createResponse.text();
-                                    })
-                                    .then(() => {
-                                        alert("Folder created successfully!");
-                                        addButton.disabled = true;
-                                        addButton.textContent = "Added";
-                                    })
-                                    .catch((error) => {
-                                        console.error(error);
-                                        alert("Failed to create folder.");
-                                    });
-                            });
-                            actionCell.appendChild(addButton);
-                            row.appendChild(actionCell);
-
-                            resultsBody.appendChild(row);
-                        }
-                    })
-                    .catch((error) => {
-                        console.error(error);
-                        message.textContent = "Error occurred while searching.";
-                        resultsTable.style.display = "none";
-                    });
-            });
+                });
         });
-    </script>
+    });
+</script>
 
 </body>
 </html>

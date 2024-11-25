@@ -10,6 +10,7 @@
 	<h1>
 		Detail Page for Story: <span th:text="${storyNumber}"></span>
 	</h1>
+	<h1 id="story-title">Detail Page for Story:</h1>
 	<div class="header">
 		<div class="header-left">
 			<h1>MN End to End Workflow</h1>
@@ -31,7 +32,8 @@
 			<button class="menu-button" onclick="showSection('impactReport')">Impact
 				Report</button>
 			<div class="upload-section">
-				<button id="upload-button" class="uploadbutton">Upload Latest Files</button>
+				<button id="upload-button" class="uploadbutton">Upload
+					Latest Files</button>
 			</div>
 		</div>
 
@@ -138,6 +140,16 @@
 								style="display: none;" target="_blank">Open Report Folder</a>
 						</div>
 					</div>
+				</div>
+			</div>
+
+			<!-- Modal for Preview -->
+			<div id="preview-modal" class="modal" style="display: none;">
+				<div class="modal-content">
+					<span class="close-button" onclick="closePreview()">&times;</span>
+					<h3>Preview of Generated Report</h3>
+					<iframe id="preview-frame" style="width: 100%; height: 500px;"
+						frameborder="0"></iframe>
 				</div>
 			</div>
 
@@ -438,6 +450,91 @@ function uploadToTFS(storyNumber) {
 
 </script>
 
+	<script>
+
+function showPreview() {
+    const previewModal = document.getElementById("preview-modal");
+    const previewFrame = document.getElementById("preview-frame");
+
+    // Set the source of the iframe to the generated report
+    previewFrame.src = "file:///C:\\Users\\rajas\\Desktop\\Excelcompare\\OutputReport20241112_180116.xlsx"; // Adjust this path to the actual report file
+
+    // Show the modal
+    previewModal.style.display = "block";
+}
+
+</script>
+
+	<script>
+
+function closePreview() {
+    const previewModal = document.getElementById("preview-modal");
+    const previewFrame = document.getElementById("preview-frame");
+
+    // Clear the iframe source
+    previewFrame.src = "";
+
+    // Hide the modal
+    previewModal.style.display = "none";
+}
+
+</script>
+
+<script>
+
+function peerreviewvalidatre() {
+    const progressText = document.querySelector("#peerReview .progress-ring__text");
+    const messageArea = document.getElementById("message-area");
+
+    // Start validation by sending a request to the backend
+    fetch("/start-peer-review-validation", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+    })
+        .then((response) => response.json())
+        .then((data) => {
+            // Update progress and messages
+            progressText.textContent = `${data.progress}%`;
+            messageArea.textContent = data.message;
+
+            // Check if the validation is complete
+            if (data.progress === 100) {
+                // Call the preview window with the folder location
+                showPreview(data.outputLocation);
+            }
+        })
+        .catch((error) => {
+            console.error("Error during validation:", error);
+            messageArea.textContent = "An error occurred during validation.";
+        });
+}
+
+function showPreview(outputLocation) {
+    const previewModal = document.getElementById("preview-modal");
+    const previewFrame = document.getElementById("preview-frame");
+
+    // Set the source of the iframe to the dynamically provided folder location
+    previewFrame.src = `file:///${outputLocation.replace(/\\/g, "/")}/generated-report.xlsx`;
+
+    // Show the modal
+    previewModal.style.display = "block";
+}
+
+function closePreview() {
+    const previewModal = document.getElementById("preview-modal");
+    const previewFrame = document.getElementById("preview-frame");
+
+    // Clear the iframe source
+    previewFrame.src = "";
+
+    // Hide the modal
+    previewModal.style.display = "none";
+}
+
+
+</script>
 
 
 

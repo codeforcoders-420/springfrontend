@@ -74,5 +74,26 @@ public class ExcelController {
 		}
 		return ResponseEntity.ok(response);
 	}
+	
+	 @PostMapping("/start-peer-review-validation")
+	    public ResponseEntity<Map<String, Object>> startPeerReviewValidation() {
+	        Map<String, Object> response = new HashMap<>();
+
+	        try {
+	            // Start the validation process
+	            ValidationResult result = excelReaderService.startValidation();
+
+	            // Prepare the response
+	            response.put("progress", result.getProgressPercentage());
+	            response.put("message", result.getMessage());
+	            response.put("outputLocation", result.getOutputFolderLocation());
+
+	            return ResponseEntity.ok(response);
+	        } catch (Exception e) {
+	            response.put("progress", 0);
+	            response.put("message", "Validation failed: " + e.getMessage());
+	            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+	        }
+	    }
 
 }
