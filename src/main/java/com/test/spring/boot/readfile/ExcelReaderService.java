@@ -8,6 +8,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import com.test.spring.boot.model.ValidationResult;
+
 @Service
 public class ExcelReaderService {
 
@@ -45,4 +47,28 @@ public class ExcelReaderService {
 		// TODO Auto-generated method stub
 		return null;
 	}
+	
+	 public ValidationResult startValidation() {
+	        ValidationResult result = new ValidationResult();
+
+	        try {
+	            // Perform the validation logic
+	            int progress = 100; // Simulate progress completion
+	            String message = "Validation completed successfully.";
+	            String outputFolderLocation = "C:\\Users\\rajas\\Desktop\\TFS Search\\123456";
+
+	            // Set the validation results
+	            result.setProgressPercentage(progress);
+	            result.setMessage(message);
+	            result.setOutputFolderLocation(outputFolderLocation);
+
+	        } catch (Exception e) {
+	            // Handle exceptions
+	            result.setProgressPercentage(0);
+	            result.setMessage("Validation failed: " + e.getMessage());
+	            result.setOutputFolderLocation(null);
+	        }
+
+	        return result;
+	    }
 }
