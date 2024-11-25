@@ -1,0 +1,118 @@
+<script>
+    function peerreviewvalidatre() {
+        const validateBtn = document.getElementById('validate-btn-src');
+        const changeFileUpload = document.getElementById('peerReview-file');
+        const progressCircle = document.querySelector('.progress-ring__circle');
+        const progressText = document.querySelector('.progress-ring__text');
+        const messageArea = document.getElementById('message-area');
+        const previewPane = document.getElementById('preview-pane');
+        const previewFrame = document.getElementById('preview-frame');
+        const radius = progressCircle.r.baseVal.value;
+        const circumference = 2 * Math.PI * radius;
+        const fileInput = document.getElementById('peerReview-file');
+        const file = fileInput.files[0];
+
+        progressCircle.style.strokeDasharray = `${circumference} ${circumference}`;
+        progressCircle.style.strokeDashoffset = circumference;
+
+        function setProgress(percent) {
+            const offset = circumference - (percent / 100) * circumference;
+            progressCircle.style.strokeDashoffset = offset;
+            progressText.textContent = `${percent}%`;
+
+            if (percent === 100) {
+                resetUIAfterCompletion();
+                showPreview(); // Show the preview when validation is complete
+            }
+        }
+
+        function resetUIAfterCompletion() {
+            changeFileUpload.value = '';
+            validateBtn.disabled = false;
+            changeFileUpload.disabled = false;
+        }
+
+        function displayLatestMessage(message) {
+            messageArea.style.display = 'block';
+            messageArea.textContent = message;
+        }
+
+        function showPreview() {
+            // Dynamically update the preview frame's source with the output location
+            fetch('/get-output-location')
+                .then((response) => response.json())
+                .then((data) => {
+                    const outputLocation = data.outputLocation;
+                    previewFrame.src = `file:///${outputLocation.replace(/\\/g, '/')}`;
+                    previewPane.style.display = 'block';
+                })
+                .catch((error) => {
+                    console.error('Error fetching output location:', error);
+                });
+        }
+
+        function newconnect() {
+            const peersocket = new SockJS('/progress-websocket');
+            const peerstompClient = Stomp.over(peersocket);
+            peerstompClient.connect({}, function (frame) {
+                console.log('Connected: ' + frame);
+                peerstompClient.subscribe('/topic/progress', function (response) {
+                    const data = response.body.split(':');
+                    const type = data[0];
+                    const content = data[1];
+
+                    if (type === 'progress') {
+                        setProgress(parseInt(content));
+                    } else if (type === 'message') {
+                        displayLatestMessage(content);
+                    }
+                });
+            });
+        }
+
+        if (!file) {
+            alert('Please select a file.');
+            return;
+        } else {
+            validateBtn.disabled = true;
+            changeFileUpload.disabled = true;
+
+            newconnect();
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            fetch('/validate-excel', {
+                method: 'POST',
+                body: formData,
+            })
+                .then((response) => response.text())
+                .then((text) => {
+                    console.log(text);
+                })
+                .catch((error) => {
+                    console.error('Error: ', error);
+                    resetUIAfterCompletion();
+                });
+        }
+    }
+</script>
+
+
+<div id="preview-pane" style="display: none; margin-top: 20px;">
+    <h3>Preview Output</h3>
+    <iframe
+        id="preview-frame"
+        style="width: 100%; height: 500px; border: 1px solid #ccc;"
+        title="Preview Window"
+    ></iframe>
+</div>
+
+
+@GetMapping("/get-output-location")
+    public ResponseEntity<Map<String, String>> getOutputLocation() {
+        Map<String, String> response = new HashMap<>();
+        String outputLocation = "C:\\Users\\Reports\\generated-report.xlsx"; // Replace with your logic
+        response.put("outputLocation", outputLocation);
+        return ResponseEntity.ok(response);
+    }
