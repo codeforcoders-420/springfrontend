@@ -151,3 +151,53 @@ private static List<Row> extractRelevantRows(Sheet sheet) {
             })
             .toList(); // Available in Java 16+, or use `collect(Collectors.toList())` for earlier versions
 }
+
+****************************************************************
+
+private static void processAction(List<Row> rows, String queryTemplate, String action) throws SQLException {
+    var groupedByDate = rows.stream()
+            .collect(Collectors.groupingBy(row -> {
+                String effDate = getCellValueAsString(row.getCell(6)); // Column G
+                String termDate = getCellValueAsString(row.getCell(7)); // Column H
+                return effDate + "-" + termDate;
+            }));
+
+    try (var connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
+        for (var entry : groupedByDate.entrySet()) {
+            var procIds = entry.getValue().stream()
+                    .map(row -> row.getCell(1).getStringCellValue()) // Column B
+                    .collect(Collectors.joining(", "));
+            var feeScheduleId = entry.getValue().get(0).getCell(0).getStringCellValue(); // Column A
+            var eff = getCellValueAsString(entry.getValue().get(0).getCell(6)); // Column G
+            var term = getCellValueAsString(entry.getValue().get(0).getCell(7)); // Column H
+
+            var query = queryTemplate
+                    .replace(":PROCID", procIds)
+                    .replace(":FSHID", feeScheduleId)
+                    .replace(":EFF", eff)
+                    .replace(":TERM", term);
+
+            executeQuery(connection, query, action);
+        }
+    }
+}
+
+private static String getCellValueAsString(Cell cell) {
+    if (cell == null) {
+        return "";
+    }
+    return switch (cell.getCellType()) {
+        case STRING -> cell.getStringCellValue();
+        case NUMERIC -> {
+            if (DateUtil.isCellDateFormatted(cell)) {
+                yield cell.getLocalDateTimeCellValue().toLocalDate().toString(); // Convert date to ISO string
+            } else {
+                yield String.valueOf(cell.getNumericCellValue());
+            }
+        }
+        case BOOLEAN -> String.valueOf(cell.getBooleanCellValue());
+        case FORMULA -> cell.getCellFormula();
+        default -> "";
+    };
+}
+
