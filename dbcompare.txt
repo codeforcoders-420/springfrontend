@@ -129,3 +129,25 @@ public class ChangeFileProcessor {
         }
     }
 }
+
+
+private static Map<String, String> extractQueries(Sheet querySheet) {
+    return StreamSupport.stream(querySheet.spliterator(), false)
+            .filter(row -> row.getCell(0) != null && row.getCell(1) != null)
+            .collect(Collectors.toMap(
+                    row -> row.getCell(0).getStringCellValue(),
+                    row -> row.getCell(1).getStringCellValue()
+            ));
+}
+
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
+
+private static List<Row> extractRelevantRows(Sheet sheet) {
+    return StreamSupport.stream(sheet.spliterator(), false)
+            .filter(row -> {
+                Cell actionCell = row.getCell(10); // Column K
+                return actionCell != null && !actionCell.getStringCellValue().isEmpty();
+            })
+            .toList(); // Available in Java 16+, or use `collect(Collectors.toList())` for earlier versions
+}
