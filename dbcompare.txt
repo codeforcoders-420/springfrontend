@@ -201,3 +201,189 @@ private static String getCellValueAsString(Cell cell) {
     };
 }
 
+*************************************************************************************
+
+import javafx.application.Application;
+import javafx.scene.Scene;
+import javafx.scene.control.*;
+import javafx.scene.layout.VBox;
+import javafx.stage.FileChooser;
+import javafx.stage.Stage;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
+import java.io.*;
+import java.sql.*;
+import java.time.LocalDate;
+import java.util.*;
+import java.util.stream.Collectors;
+
+public class ChangeFileProcessorWithUI extends Application {
+
+    private File changeFile;
+    private LocalDate prodDeployedDate;
+
+    private static final String OUTPUT_DIR = "C:/users/sqlreports/";
+    private static final String QUERIES_FILE_PATH = "./src/main/resources/Queries.xlsx";
+    private static final String DB_URL = "jdbc:sqlserver://localhost;databaseName=yourDatabase";
+    private static final String DB_USER = "yourUsername";
+    private static final String DB_PASSWORD = "yourPassword";
+
+    public static void main(String[] args) {
+        launch(args);
+    }
+
+    @Override
+    public void start(Stage primaryStage) {
+        primaryStage.setTitle("Change File Processor");
+
+        Label fileLabel = new Label("Select Change File:");
+        Button fileButton = new Button("Choose File");
+        Label selectedFileLabel = new Label("No file selected");
+
+        fileButton.setOnAction(e -> {
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Excel Files", "*.xlsx"));
+            changeFile = fileChooser.showOpenDialog(primaryStage);
+            if (changeFile != null) {
+                selectedFileLabel.setText(changeFile.getAbsolutePath());
+            }
+        });
+
+        Label dateLabel = new Label("Enter Prod Deployed Date:");
+        DatePicker datePicker = new DatePicker();
+
+        Button processButton = new Button("Process");
+        processButton.setOnAction(e -> {
+            if (changeFile == null || datePicker.getValue() == null) {
+                showAlert(Alert.AlertType.ERROR, "Missing Input", "Please select a file and a date.");
+                return;
+            }
+
+            prodDeployedDate = datePicker.getValue();
+            try {
+                processChangeFile();
+                showAlert(Alert.AlertType.INFORMATION, "Success", "Processing completed. Results saved in: " + OUTPUT_DIR);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                showAlert(Alert.AlertType.ERROR, "Error", "An error occurred during processing: " + ex.getMessage());
+            }
+        });
+
+        VBox layout = new VBox(10, fileLabel, fileButton, selectedFileLabel, dateLabel, datePicker, processButton);
+        Scene scene = new Scene(layout, 400, 300);
+        primaryStage.setScene(scene);
+        primaryStage.show();
+    }
+
+    private void processChangeFile() throws Exception {
+        try (var changeWorkbook = new XSSFWorkbook(new FileInputStream(changeFile));
+             var queryWorkbook = new XSSFWorkbook(new FileInputStream(new File(QUERIES_FILE_PATH)));
+             var outputWorkbook = new XSSFWorkbook()) {
+
+            var changeSheet = changeWorkbook.getSheetAt(0);
+            var querySheet = queryWorkbook.getSheetAt(0);
+            var outputSheet = outputWorkbook.createSheet("Results");
+
+            var queries = extractQueries(querySheet);
+            var changeRows = extractRelevantRows(changeSheet);
+            var groupedRows = groupRowsByAction(changeRows);
+
+            int outputRowIndex = 0;
+
+            for (var entry : groupedRows.entrySet()) {
+                String action = entry.getKey();
+                List<Row> rows = entry.getValue();
+
+                switch (action) {
+                    case "New Code" -> outputRowIndex = processAction(rows, queries.get("Query 1"), action, outputSheet, outputRowIndex);
+                    case "Rate Change", "Termination" -> outputRowIndex = processAction(rows, queries.get("Query 2"), action, outputSheet, outputRowIndex);
+                }
+            }
+
+            try (var fileOut = new FileOutputStream(new File(OUTPUT_DIR + "Combined_Report.xlsx"))) {
+                outputWorkbook.write(fileOut);
+            }
+        }
+    }
+
+    private static Map<String, String> extractQueries(Sheet querySheet) {
+        Map<String, String> queries = new HashMap<>();
+        for (Row row : querySheet) {
+            Cell keyCell = row.getCell(0);
+            Cell valueCell = row.getCell(1);
+            if (keyCell != null && valueCell != null) {
+                queries.put(keyCell.getStringCellValue(), valueCell.getStringCellValue());
+            }
+        }
+        return queries;
+    }
+
+    private static List<Row> extractRelevantRows(Sheet sheet) {
+        List<Row> relevantRows = new ArrayList<>();
+        for (Row row : sheet) {
+            Cell actionCell = row.getCell(10);
+            if (actionCell != null && !actionCell.getStringCellValue().isEmpty()) {
+                relevantRows.add(row);
+            }
+        }
+        return relevantRows;
+    }
+
+    private static Map<String, List<Row>> groupRowsByAction(List<Row> rows) {
+        return rows.stream()
+                .collect(Collectors.groupingBy(row -> row.getCell(10).getStringCellValue())); // Group by Action column
+    }
+
+    private int processAction(List<Row> rows, String queryTemplate, String action, Sheet outputSheet, int outputRowIndex) throws SQLException {
+        var groupedByDate = rows.stream()
+                .collect(Collectors.groupingBy(row ->
+                        row.getCell(6).getStringCellValue() + "-" + row.getCell(7).getStringCellValue()
+                ));
+
+        try (var connection = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
+            for (var entry : groupedByDate.entrySet()) {
+                var procIds = entry.getValue().stream()
+                        .map(row -> row.getCell(1).getStringCellValue())
+                        .collect(Collectors.joining(", "));
+                var feeScheduleId = entry.getValue().get(0).getCell(0).getStringCellValue();
+                var eff = entry.getValue().get(0).getCell(6).getStringCellValue();
+                var term = prodDeployedDate.toString();
+
+                var query = queryTemplate
+                        .replace(":PROCID", procIds)
+                        .replace(":FSHID", feeScheduleId)
+                        .replace(":EFF", eff)
+                        .replace(":TERM", term);
+
+                try (var stmt = connection.prepareStatement(query)) {
+                    if (stmt.execute()) {
+                        outputRowIndex = writeResultsToOutputSheet(stmt.getResultSet(), outputSheet, action, outputRowIndex);
+                    }
+                }
+            }
+        }
+        return outputRowIndex;
+    }
+
+    private int writeResultsToOutputSheet(ResultSet resultSet, Sheet outputSheet, String action, int startRowIndex) throws SQLException {
+        var metaData = resultSet.getMetaData();
+        int columnCount = metaData.getColumnCount();
+
+        while (resultSet.next()) {
+            var row = outputSheet.createRow(startRowIndex++);
+            for (int i = 1; i <= columnCount; i++) {
+                row.createCell(i - 1).setCellValue(resultSet.getString(i));
+            }
+            row.createCell(columnCount).setCellValue(action); // Add Action Code as the last column
+        }
+        return startRowIndex;
+    }
+
+    private void showAlert(Alert.AlertType type, String title, String content) {
+        Alert alert = new Alert(type);
+        alert.setTitle(title);
+        alert.setContentText(content);
+        alert.showAndWait();
+    }
+}
