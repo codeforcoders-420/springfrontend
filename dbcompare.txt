@@ -387,3 +387,30 @@ public class ChangeFileProcessorWithUI extends Application {
         alert.showAndWait();
     }
 }
+
+
+private int writeResultsToOutputSheet(ResultSet resultSet, Sheet outputSheet, String action, int startRowIndex) throws SQLException {
+    ResultSetMetaData metaData = resultSet.getMetaData();
+    int columnCount = metaData.getColumnCount();
+
+    // If this is the first set of results, write the column headers
+    if (startRowIndex == 0) {
+        Row headerRow = outputSheet.createRow(startRowIndex++);
+        for (int i = 1; i <= columnCount; i++) {
+            headerRow.createCell(i - 1).setCellValue(metaData.getColumnName(i));
+        }
+        headerRow.createCell(columnCount).setCellValue("Action"); // Add "Action" as the last column header
+    }
+
+    // Write the result set rows
+    while (resultSet.next()) {
+        Row row = outputSheet.createRow(startRowIndex++);
+        for (int i = 1; i <= columnCount; i++) {
+            row.createCell(i - 1).setCellValue(resultSet.getString(i));
+        }
+        row.createCell(columnCount).setCellValue(action); // Add Action Code as the last column
+    }
+
+    return startRowIndex;
+}
+
