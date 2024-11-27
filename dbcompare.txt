@@ -414,3 +414,6 @@ private int writeResultsToOutputSheet(ResultSet resultSet, Sheet outputSheet, St
     return startRowIndex;
 }
 
+
+
+Get-NetTCPConnection -LocalPort <PortNumber> | Select-Object LocalAddress, LocalPort, State
