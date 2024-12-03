@@ -1,4 +1,139 @@
 /* General Styles */
+section {
+	height: 100vh; /* Full-screen height for each section */
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	scroll-snap-align: start; /* Snap alignment for scrolling */
+	scroll-snap-stop: always;
+	background-color: #ffffff;
+}
+
+html {
+	scroll-behavior: smooth; /* Smooth scrolling behavior */
+	scroll-snap-type: y mandatory; /* Snap scrolling vertically */
+	overflow-y: scroll;
+}
+
+/* Navigation Bar */
+.nav-pane {
+ 	position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background: #fff; /* White background */
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    z-index: 10;
+    padding: 10px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.navbar {
+position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background: #fff; /* White background */
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    z-index: 10;
+    padding: 10px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.nav-left h1 {
+	font-size: 1.5em;
+	color: #4c6ef5;
+	margin: 0;
+}
+
+.nav-right {
+	display: flex;
+	align-items: center;
+	gap: 20px;
+}
+
+.nav-right a {
+	color: #333;
+	text-decoration: none;
+	font-size: 1rem;
+	font-weight: bold;
+	transition: color 0.3s;
+}
+
+.nav-right a:hover {
+	color: #4c6ef5;
+}
+
+.nav-right button {
+	background-color: #007bff;
+	color: white;
+	border: none;
+	border-radius: 5px;
+	padding: 8px 12px;
+	cursor: pointer;
+}
+
+.nav-right button:hover {
+	background-color: #0056b3;
+}
+
+.scroll-section {
+	height: 100vh;
+	display: flex;
+	flex-direction: column;
+	justify-content: center; /* Centers vertically */
+	align-items: center; /* Centers horizontally */
+	background-color: #f8f9fa;
+	padding: 20px;
+	text-align: center; /* Ensures the text is centered */
+}
+
+.tool-cards {
+	display: flex;
+	justify-content: center; /* Centers the cards horizontally */
+	align-items: flex-start;
+	gap: 20px; /* Adds space between the cards */
+}
+
+.tool-card {
+	background-color: #fff;
+	border: 1px solid #ddd;
+	border-radius: 8px;
+	padding: 20px;
+	width: 20%;
+	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+	text-align: left;
+	transition: transform 0.3s ease, box-shadow 0.3s ease;
+	
+}
+
+.tool-card:hover {
+	transform: translateY(-5px);
+	box-shadow: 0 6px 10px rgba(0, 0, 0, 0.2);
+}
+
+.tool-card h3 {
+	font-size: 1.5rem;
+	color: #4a90e2;
+	margin-bottom: 15px;
+}
+
+.tool-card ul {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+}
+
+.tool-card ul li {
+	font-size: 1rem;
+	color: #333;
+	margin-bottom: 10px;
+}
+
 body {
 	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
 		"Helvetica Neue", Arial, sans-serif;
@@ -8,11 +143,213 @@ body {
 	background-color: #ffffff;
 }
 
-.container {
-	width: 90%; /* Increase width for more content space */
-	margin: auto;
-	max-width: 1200px; /* Limit max width */
+/* Section Container */
+.section-container {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	padding: 50px 0;
 }
+
+/* Section Headers */
+.section-header {
+	text-align: center;
+	margin-bottom: 30px;
+}
+
+.section-header h2 {
+	font-size: 28px;
+	color: #333;
+}
+
+.section-header p {
+	font-size: 16px;
+	color: #666;
+}
+
+/* Section 1 (Deployment Schedule) */
+.section1 {
+	background-color: #1b1f1c; /* Dark green background */
+    color: #fff; /* White text */
+    min-height: 100vh;
+    padding-top: 80px; /* Ensure content doesn't overlap with the navigation */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+/* Calendar Container */
+.calendar-container {
+	width: 45%;
+}
+
+.calendar-title {
+	font-size: 20px;
+	font-weight: bold;
+	color: #4c6ef5;
+	margin-bottom: 15px;
+}
+
+/* Search Section */
+.search-container {
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+	width: 45%;
+}
+
+.search-container input[type="text"] {
+	padding: 8px;
+	margin-right: 10px;
+	border: 1px solid #ccc;
+	border-radius: 4px;
+	width: 70%;
+}
+
+.search-container button {
+	background-color: #28a745;
+	color: #fff;
+	border: none;
+	padding: 8px 12px;
+	border-radius: 4px;
+	cursor: pointer;
+}
+
+.search-container button:hover {
+	background-color: #218838;
+}
+
+/* Section 2 (Team Collaboration Tools) */
+.section-2 {
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* Vertically center */
+    align-items: center; /* Horizontally center */
+    min-height: 100vh; /* Make sure it takes full screen height */
+    padding: 100px 20px; /* Add padding to avoid overlap with navigation pane */
+    box-sizing: border-box;
+}
+
+.section-2 h1 {
+    font-size: 2rem;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 20px; 
+}
+
+.section-2 p {
+    font-size: 1rem;
+    text-align: center;
+    margin-bottom: 40px; /* Space between subtitle and cards */
+}
+
+
+.section-2 .card-container {
+	display: flex;
+	justify-content: space-between;
+	width: 80%;
+}
+
+.section-2 .card {
+	background-color: #fff;
+	border-radius: 8px;
+	box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+	padding: 20px;
+	width: 30%;
+	text-align: center;
+}
+
+.section-2 .card h3 {
+	color: #4c6ef5;
+	font-size: 18px;
+	margin-bottom: 10px;
+}
+
+.section-2 .card p {
+	font-size: 14px;
+	color: #555;
+}
+
+#section3 {
+	background-color: #dee2e6; /* Darker grey for third section */
+}
+
+/* Section 3 Styling */
+#individualtools {
+    padding: 50px;
+    background-color: #f5f6fa;
+    text-align: center;
+}
+
+.section-title {
+    font-size: 2em;
+    margin-bottom: 80px;
+    color: #333;
+    text-align: center; /* Ensures the title is centered */
+    margin: 0 auto; /* Centers the title */
+}
+
+
+.individualtools-container {
+   display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px; /* Keep spacing between tool cards */
+    padding-top: 20px; /* Add spacing between title and cards */
+}
+
+.individualtools-card {
+    background-color: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: 250px;
+    padding: 20px;
+    text-align: center;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.individualtools-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.individualtools-title {
+    font-size: 1.5em;
+    margin-bottom: 10px;
+    color: #007bff;
+}
+
+.individualtools-description {
+    font-size: 1em;
+    color: #666;
+    margin-bottom: 15px;
+}
+
+.individualtools-button {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-size: 1em;
+    transition: background-color 0.2s ease;
+}
+
+.individualtools-button:hover {
+    background-color: #0056b3;
+}
+
+.container {
+	width: 100%;
+	height: 100%;
+	align-items: center;
+	margin-top: 10px;
+}
+
 
 .sccontainer {
 	width: 50%;
@@ -25,7 +362,6 @@ header {
 	justify-content: space-between;
 	align-items: center;
 	padding: 20px 0;
-	border-bottom: 1px solid #ddd;
 }
 
 .header-left h2 {
@@ -53,6 +389,8 @@ header {
 	justify-content: center;
 	align-items: center;
 	margin-top: 20px;
+	max-width: 300px;
+	margin: auto;
 }
 
 .calendar {
@@ -125,12 +463,12 @@ header {
 }
 
 .story-box {
-	flex: 1;
-	background-color: #f0f0f0;
-	margin: 0 10px;
+	background-color: #fff;
 	padding: 15px;
-	border-radius: 10px;
-	box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+	border-radius: 5px;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+	flex: 1;
+	text-align: center;
 }
 
 .story-box h3 {
@@ -172,10 +510,9 @@ header {
 
 .tools {
 	display: flex;
+	justify-content: center;
 	flex-wrap: wrap;
-	gap: 10px;
-	justify-content: flex-start; /* Left align buttons */
-	margin-left: 20px;
+	gap: 20px;
 }
 
 .tools button {
@@ -363,11 +700,11 @@ header {
 }
 
 #results-table a {
-    color: blue;
-    text-decoration: underline;
-    cursor: pointer;
+	color: blue;
+	text-decoration: underline;
+	cursor: pointer;
 }
 
 #results-table a:hover {
-    color: darkblue;
+	color: darkblue;
 }

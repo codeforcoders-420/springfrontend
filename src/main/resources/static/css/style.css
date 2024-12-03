@@ -541,7 +541,7 @@ header {
 }
 
 .uploadbutton {
-	background-color: #28a745; /* Sidebar button color */
+	background-color:  #28a745 ; /* Sidebar button color */
     color: white;
     border: none;
     padding: 10px 20px;
@@ -589,4 +589,51 @@ header {
     background: none;
     border: none;
     color: #000;
+}
+
+#show-preview-btn {
+    background-color: #007bff;
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+#show-preview-btn:hover {
+    background-color: #0056b3;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+label {
+    display: block;
+    font-size: 1rem;
+    margin-bottom: 5px;
+    color: #555;
+}
+
+input[type="file"],
+input[type="date"] {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.validate-button {
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.validate-button:hover {
+    background-color: #0056b3;
 }

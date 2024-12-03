@@ -4,7 +4,16 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>End to End Workflow</title>
-<link rel="stylesheet" th:href="@{/css/style.css}">
+<link rel="stylesheet" th:href="@{/css/style.css}"
+	href="https://cdn.jsdelivr.net/npm/handsontable@12.2.0/dist/handsontable.min.css">
+<style>
+#excelPreview {
+	margin: 20px auto;
+	width: 90%;
+	height: 400px;
+	overflow: hidden;
+}
+</style>
 </head>
 <body>
 	<h1>
@@ -107,6 +116,12 @@
 					<div class="right-section">
 						<h3>Explanation / Summary</h3>
 						<p>[PR Review validator Content will go here]</p>
+
+						<button onclick="showPreview()" class="menu-button">Show
+							Preview</button>
+
+						<h1>Excel File Preview</h1>
+						<div id="excelPreview"></div>
 					</div>
 					<div class="right-section">
 						<h3>Utility</h3>
@@ -141,6 +156,9 @@
 						</div>
 					</div>
 				</div>
+
+
+
 			</div>
 
 			<!-- Modal for Preview -->
@@ -162,15 +180,19 @@
 					</div>
 					<div class="right-section">
 						<h3>Utility</h3>
-						<form>
-							<label for="env-peerReview">Select Env:</label> <select
-								id="env-peerReview">
-								<option value="SIT">SIT</option>
-								<option value="PROD">PROD</option>
-							</select> <label for="peerReview-file">Select Change File:</label> <input
-								type="file" id="peerReview-file">
-
-							<button type="button">Validate</button>
+						<form id="impactReportForm">
+							<div class="form-group">
+								<label for="impactFile">Select File:</label> <input type="file"
+									id="impactFile" name="impactFile" accept=".xlsx,.xls" required />
+							</div>
+							<div class="form-group">
+								<label for="deployedDate">Prod Deployed Date:</label> <input
+									type="date" id="deployedDate" name="deployedDate" required />
+							</div>
+							<div class="form-group">
+								<button type="button" id="validateImpactReport"
+									class="validate-button">Validate</button>
+							</div>
 						</form>
 						<div class="progress-circle">
 							<div class="circle">
@@ -450,92 +472,83 @@ function uploadToTFS(storyNumber) {
 
 </script>
 
-	<script>
-
-function showPreview() {
-    const previewModal = document.getElementById("preview-modal");
-    const previewFrame = document.getElementById("preview-frame");
-
-    // Set the source of the iframe to the generated report
-    previewFrame.src = "file:///C:\\Users\\rajas\\Desktop\\Excelcompare\\OutputReport20241112_180116.xlsx"; // Adjust this path to the actual report file
-
-    // Show the modal
-    previewModal.style.display = "block";
-}
-
-</script>
+	<script
+		src="https://cdn.jsdelivr.net/npm/handsontable@12.2.0/dist/handsontable.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 
 	<script>
+	function showPreview() {
+	   
+	      document.addEventListener('DOMContentLoaded', () => {
+	            const container = document.getElementById('excelPreview');
 
-function closePreview() {
-    const previewModal = document.getElementById("preview-modal");
-    const previewFrame = document.getElementById("preview-frame");
+	            // Initialize Handsontable
+	            const hot = new Handsontable(container, {
+	                data: [], // Data will be loaded dynamically
+	                colHeaders: true, // Show column headers
+	                rowHeaders: true, // Show row headers
+	                stretchH: 'all', // Stretch columns to fit container
+	                width: '100%',
+	                height: 400,
+	                licenseKey: 'non-commercial-and-evaluation', // License key for Handsontable
+	            });
 
-    // Clear the iframe source
-    previewFrame.src = "";
-
-    // Hide the modal
-    previewModal.style.display = "none";
-}
-
+	            // Fetch Excel data
+	            axios.get('/preview')
+	                .then(response => {
+	                    const data = response.data;
+	                    hot.loadData(data); // Load data into Handsontable
+	                })
+	                .catch(error => console.error(error));
+	        });
+	}
 </script>
 
-<script>
 
-function peerreviewvalidatre() {
-    const progressText = document.querySelector("#peerReview .progress-ring__text");
-    const messageArea = document.getElementById("message-area");
+	<script> 
+	
+	document.getElementById('validateImpactReport').addEventListener('click', async function () {
+	    const fileInput = document.getElementById('impactFile');
+	    const dateInput = document.getElementById('deployedDate');
+	    const statusMessage = document.getElementById('impactReportStatus');
 
-    // Start validation by sending a request to the backend
-    fetch("/start-peer-review-validation", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-        },
-    })
-        .then((response) => response.json())
-        .then((data) => {
-            // Update progress and messages
-            progressText.textContent = `${data.progress}%`;
-            messageArea.textContent = data.message;
+	    if (!fileInput.files.length || !dateInput.value) {
+	        statusMessage.textContent = "Please select a file and a date.";
+	        statusMessage.style.color = "red";
+	        return;
+	    }
 
-            // Check if the validation is complete
-            if (data.progress === 100) {
-                // Call the preview window with the folder location
-                showPreview(data.outputLocation);
-            }
-        })
-        .catch((error) => {
-            console.error("Error during validation:", error);
-            messageArea.textContent = "An error occurred during validation.";
-        });
-}
+	    const file = fileInput.files[0];
+	    const deployedDate = dateInput.value;
 
-function showPreview(outputLocation) {
-    const previewModal = document.getElementById("preview-modal");
-    const previewFrame = document.getElementById("preview-frame");
+	    const formData = new FormData();
+	    formData.append('file', file);
+	    formData.append('deployedDate', deployedDate);
 
-    // Set the source of the iframe to the dynamically provided folder location
-    previewFrame.src = `file:///${outputLocation.replace(/\\/g, "/")}/generated-report.xlsx`;
+	    statusMessage.textContent = "Processing...";
+	    statusMessage.style.color = "blue";
 
-    // Show the modal
-    previewModal.style.display = "block";
-}
+	    try {
+	        const response = await fetch('/process-impact-report', {
+	            method: 'POST',
+	            body: formData
+	        });
 
-function closePreview() {
-    const previewModal = document.getElementById("preview-modal");
-    const previewFrame = document.getElementById("preview-frame");
+	        if (response.ok) {
+	            const result = await response.text();
+	            statusMessage.textContent = result || "Impact report processed successfully!";
+	            statusMessage.style.color = "green";
+	        } else {
+	            throw new Error("Failed to process the impact report");
+	        }
+	    } catch (error) {
+	        statusMessage.textContent = error.message;
+	        statusMessage.style.color = "red";
+	    }
+	});
 
-    // Clear the iframe source
-    previewFrame.src = "";
-
-    // Hide the modal
-    previewModal.style.display = "none";
-}
-
-
-</script>
-
+	
+	</script>
 
 
 

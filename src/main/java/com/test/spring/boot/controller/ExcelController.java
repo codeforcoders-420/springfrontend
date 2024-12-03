@@ -3,9 +3,16 @@ package com.test.spring.boot.controller;
 
 import java.util.Map;
 import java.util.HashMap;
+import java.util.List;
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.time.LocalDate;
+import java.util.ArrayList;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.ui.Model;
@@ -19,6 +26,17 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import com.test.spring.boot.model.ValidationResult;
 import com.test.spring.boot.readfile.ExcelReaderService;
 import com.test.spring.boot.readfile.SourceFileValidation;
+import com.test.spring.boot.readfile.ClaimsImpactAnalysis;
+
+import java.io.FileInputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 @RestController
 public class ExcelController {
@@ -76,26 +94,71 @@ public class ExcelController {
 		}
 		return ResponseEntity.ok(response);
 	}
+
+	@PostMapping("/start-peer-review-validation")
+	public ResponseEntity<Map<String, Object>> startPeerReviewValidation() {
+		Map<String, Object> response = new HashMap<>();
+
+		try {
+			// Start the validation process
+			ValidationResult result = excelReaderService.startValidation();
+
+			// Prepare the response
+			response.put("progress", result.getProgressPercentage());
+			response.put("message", result.getMessage());
+			response.put("outputLocation", result.getOutputFolderLocation());
+
+			return ResponseEntity.ok(response);
+		} catch (Exception e) {
+			response.put("progress", 0);
+			response.put("message", "Validation failed: " + e.getMessage());
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+		}
+	}
+
+	@GetMapping("/get-output-file-path")
+	public String getOutputFilePath() {
+		return excelReaderService.getOutputFilePath();
+	}
 	
-	 @PostMapping("/start-peer-review-validation")
-	    public ResponseEntity<Map<String, Object>> startPeerReviewValidation() {
-	        Map<String, Object> response = new HashMap<>();
+	@GetMapping("/preview")
+	public List<List<String>> previewExcel() throws IOException {
+        String filePath = "C:\\Users\\rajas\\Desktop\\Excelcompare\\PreviewTemplate.xlsx"; // Replace with your shared path
+        List<List<String>> excelData = new ArrayList<>();
+        try (FileInputStream fis = new FileInputStream(filePath);
+             Workbook workbook = new XSSFWorkbook(fis)) {
+            Sheet sheet = workbook.getSheetAt(0); // Get the first sheet
+            for (Row row : sheet) {
+                List<String> rowData = new ArrayList<>();
+                for (Cell cell : row) {
+                    rowData.add(cell.toString());
+                }
+                excelData.add(rowData);
+            }
+        }
+        return excelData; // Returns the Excel data as a JSON object
+    }
+	
+	@PostMapping("/process-impact-report")
+	public ResponseEntity<String> processImpactReport(
+	        @RequestParam("file") MultipartFile file,
+	        @RequestParam("deployedDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate deployedDate) {
+	    try {
+	        // Save file to a temporary location or process directly
+	        Path tempFile = Files.createTempFile("impact-report-", file.getOriginalFilename());
+	        file.transferTo(tempFile.toFile());
 
-	        try {
-	            // Start the validation process
-	            ValidationResult result = excelReaderService.startValidation();
+	        // Call the ClaimsImpactAnalysis method with file location and date
+	        ClaimsImpactAnalysis analysis = new ClaimsImpactAnalysis();
+	        analysis.process(tempFile.toString(), deployedDate.toString());
 
-	            // Prepare the response
-	            response.put("progress", result.getProgressPercentage());
-	            response.put("message", result.getMessage());
-	            response.put("outputLocation", result.getOutputFolderLocation());
+	        // Clean up temp file
+	        Files.deleteIfExists(tempFile);
 
-	            return ResponseEntity.ok(response);
-	        } catch (Exception e) {
-	            response.put("progress", 0);
-	            response.put("message", "Validation failed: " + e.getMessage());
-	            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-	        }
+	        return ResponseEntity.ok("Impact report processed successfully!");
+	    } catch (Exception e) {
+	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error: " + e.getMessage());
 	    }
+	}
 
 }

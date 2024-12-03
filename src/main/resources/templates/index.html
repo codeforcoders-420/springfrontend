@@ -7,118 +7,166 @@
 <link rel="stylesheet" th:href="@{/css/homepage.css}">
 </head>
 <body>
+
+	<!-- Navigation Bar -->
+	<nav class="navbar">
+		<div class="nav-left">
+			<h1>MN TEAM INTERNAL PORTAL</h1>
+		</div>
+		<div class="nav-right">
+			<a href="#section1">Home</a> <a href="#section-2">Stories</a> <a
+				href="#individualtools">Tools</a> <a href="#">How It Works</a>
+			<button>Contact</button>
+		</div>
+	</nav>
+
 	<div class="container">
-		<header>
-			<div class="header-left">
-				<h2>Current Week Deployment Schedule</h2>
-				<div class="calendar-container">
-					<div class="calendar">
-						<div class="calendar-header">
-							<button class="calendar-nav">◀</button>
-							<h3 id="calendar-month-year">November 2024</h3>
-							<button class="calendar-nav">▶</button>
-						</div>
-						<div class="calendar-days">
-							<div class="calendar-day">Sun</div>
-							<div class="calendar-day">Mon</div>
-							<div class="calendar-day">Tue</div>
-							<div class="calendar-day">Wed</div>
-							<div class="calendar-day">Thu</div>
-							<div class="calendar-day">Fri</div>
-							<div class="calendar-day">Sat</div>
-							<!-- Days will be generated dynamically here by JavaScript -->
+		<!-- Section 1: Header and Search -->
+		<section id="section1" data-section="home">
+			<header>
+				<div class="header-left">
+					<h2>Current Week Deployment Schedule</h2>
+					<div class="calendar-container">
+						<div class="calendar">
+							<div class="calendar-header">
+								<button class="calendar-nav">◀</button>
+								<h3 id="calendar-month-year">November 2024</h3>
+								<button class="calendar-nav">▶</button>
+							</div>
+							<div class="calendar-days">
+								<div class="calendar-day">Sun</div>
+								<div class="calendar-day">Mon</div>
+								<div class="calendar-day">Tue</div>
+								<div class="calendar-day">Wed</div>
+								<div class="calendar-day">Thu</div>
+								<div class="calendar-day">Fri</div>
+								<div class="calendar-day">Sat</div>
+								<!-- Days will be generated dynamically here by JavaScript -->
+							</div>
 						</div>
 					</div>
 				</div>
-			</div>
+				<div class="sccontainer">
+					<div class="search-container">
+						<label for="search-input" class="search-label">Search by
+							TFS #:</label> <input type="text" id="searchInput"
+							placeholder="Enter TFS number" class="search-input">
+						<button id="searchButton" class="search-button">Search</button>
+					</div>
 
-			<div class="sccontainer">
-				<div class="search-container">
-					<label for="search-input" class="search-label">Search by
-						TFS #:</label> <input type="text" id="searchInput"
-						placeholder="Enter TFS number" class="search-input">
-					<button id="searchButton" class="search-button">Search</button>
+					<!-- Results Section -->
+					<div class="results-section">
+						<table id="resultsTable" class="result-table"
+							style="display: none;">
+							<thead>
+								<tr>
+									<th>TFS Number</th>
+									<th>Action</th>
+								</tr>
+							</thead>
+							<tbody id="resultsBody"></tbody>
+						</table>
+						<p id="message" class="message"></p>
+					</div>
 				</div>
+				<div class="header-right">
+					<h1>
+						Hello, <span id="user-name">Raja Murugan</span>
+					</h1>
+				</div>
+			</header>
+		</section>
 
-				<!-- Results Section -->
-				<div class="results-section">
-					<table id="resultsTable" class="result-table"
-						style="display: none;">
-						<thead>
-							<tr>
-								<th>TFS Number</th>
-								<th>Action</th>
-							</tr>
-						</thead>
-						<tbody id="resultsBody"></tbody>
-					</table>
-					<p id="message" class="message"></p>
+		<!-- Section 2: Stories -->
+		<section id="section-2" data-section="stories" class="scroll-section">
+			<div class="container">
+				<h2>Team Collaboration Tools</h2>
+				<p>Enhance workflow and productivity</p>
+				<div class="tool-cards">
+					<div class="tool-card">
+						<h3>RG Stories</h3>
+						<ul>
+							<li><a href="/openRGStory?storyNumber=123456">123456</a></li>
+							<li>345676</li>
+							<li>546732</li>
+							<li>354335</li>
+							<li>657532</li>
+							<li>465763</li>
+							<li>643634</li>
+						</ul>
+					</div>
+					<div class="tool-card">
+						<h3>ENR Stories</h3>
+						<ul>
+							<li>123456</li>
+							<li>345676</li>
+							<li>546732</li>
+							<li>354335</li>
+							<li>657532</li>
+							<li>465763</li>
+							<li>643634</li>
+						</ul>
+					</div>
+					<div class="tool-card">
+						<h3>BF Stories</h3>
+						<ul>
+							<li>123456</li>
+							<li>345676</li>
+							<li>546732</li>
+							<li>354335</li>
+							<li>657532</li>
+							<li>465763</li>
+							<li>643634</li>
+						</ul>
+					</div>
 				</div>
 			</div>
+		</section>
 
-
-			<div class="header-right">
-				<h1>
-					Hello, <span id="user-name">Raja Murugan</span>
-				</h1>
+		<!-- Section 3: Tools -->
+		<section id="individualtools" data-section="indtools">
+			<div class="individualtools-section">
+				<h3 class="section-title">Stand-alone Tools</h3>
+				<div class="individualtools-container">
+					<div class="individualtools-card">
+						<h4 class="individualtools-title">Peer Review</h4>
+						<p class="individualtools-description">Validate peer reviews efficiently.</p>
+						<button class="individualtools-button">Open</button>
+					</div>
+					<div class="individualtools-card">
+						<h4 class="individualtools-title">DB to DB</h4>
+						<p class="individualtools-description">Compare databases seamlessly.</p>
+						<button class="individualtools-button">Open</button>
+					</div>
+					<div class="individualtools-card">
+						<h4 class="individualtools-title">Pre-Impact</h4>
+						<p class="individualtools-description">Pre-check impact analysis.</p>
+						<button class="individualtools-button">Open</button>
+					</div>
+					<div class="individualtools-card">
+						<h4 class="individualtools-title">Analyst Checklist</h4>
+						<p class="individualtools-description">Ensure thorough reviews.</p>
+						<button class="individualtools-button">Open</button>
+					</div>
+					<div class="individualtools-card">
+						<h4 class="individualtools-title">Standard Queries</h4>
+						<p class="individualtools-description">Run standard query checks.</p>
+						<button class="individualtools-button">Open</button>
+					</div>
+					<div class="individualtools-card">
+						<h4 class="individualtools-title">PDD</h4>
+						<p class="individualtools-description">Process documentation details.</p>
+						<button class="individualtools-button">Open</button>
+					</div>
+					<div class="individualtools-card">
+						<h4 class="individualtools-title">[Place Holder]</h4>
+						<p class="individualtools-description">Future functionality here.</p>
+						<button class="individualtools-button">Open</button>
+					</div>
+				</div>
 			</div>
-		</header>
-
-
-
-		<div class="story-sections">
-			<div class="story-box">
-				<h3>RG Stories</h3>
-				<ul>
-					<li><a href="/openRGStory?storyNumber=123456">123456</a></li>
-					<li><a href="/openRGStory?storyNumber=345676">345676</a></li>
-					<li><a href="page3.html">546732</a></li>
-					<li><a href="page4.html">354335</a></li>
-					<li><a href="page5.html">657532</a></li>
-					<li><a href="page6.html">465763</a></li>
-					<li><a href="page7.html">643634</a></li>
-				</ul>
-			</div>
-			<div class="story-box">
-				<h3>ENR Stories</h3>
-				<ul>
-					<li><a href="page1.html">123456</a></li>
-					<li><a href="page2.html">345676</a></li>
-					<li><a href="page3.html">546732</a></li>
-					<li><a href="page4.html">354335</a></li>
-					<li><a href="page5.html">657532</a></li>
-					<li><a href="page6.html">465763</a></li>
-					<li><a href="page7.html">643634</a></li>
-				</ul>
-			</div>
-			<div class="story-box">
-				<h3>BF Stories</h3>
-				<ul>
-					<li><a href="page1.html">123456</a></li>
-					<li><a href="page2.html">345676</a></li>
-					<li><a href="page3.html">546732</a></li>
-					<li><a href="page4.html">354335</a></li>
-					<li><a href="page5.html">657532</a></li>
-					<li><a href="page6.html">465763</a></li>
-					<li><a href="page7.html">643634</a></li>
-				</ul>
-			</div>
-		</div>
-
-		<div class="tools-section">
-			<h3>Stand-alone tools</h3>
-			<div class="tools">
-				<button>Peer Review</button>
-				<button>DB to DB</button>
-				<button>Pre-Impact</button>
-				<button>Analyst Checklist</button>
-				<button>Standard Queries</button>
-				<button>PDD</button>
-				<button>[Place Holder]</button>
-			</div>
-		</div>
+		</section>
 	</div>
-	<script src="script.js"></script>
 
 	<script>
 	document.addEventListener("DOMContentLoaded", function () {
