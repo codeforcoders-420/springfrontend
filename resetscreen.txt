@@ -1,0 +1,21 @@
+<body>
+    <!-- Your content here -->
+
+    <!-- Add the script here -->
+    <script>
+        window.onload = function () {
+            // Scroll to Section 1
+            document.getElementById("section1").scrollIntoView({ behavior: "smooth" });
+
+            // Reset preview (if applicable)
+            resetPreview();
+        };
+
+        function resetPreview() {
+            const previewContainer = document.getElementById("preview-container"); // Replace with your preview container ID
+            if (previewContainer) {
+                previewContainer.innerHTML = ""; // Clear the preview content
+            }
+        }
+    </script>
+</body>
