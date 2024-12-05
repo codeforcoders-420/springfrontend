@@ -1,0 +1,29 @@
+ @GetMapping("/getUsername")
+    public String getUsername(HttpServletRequest request) {
+        // Fetch Windows username from the request
+        String username = request.getRemoteUser(); // or request.getHeader("REMOTE_USER");
+        if (username == null || username.isEmpty()) {
+            username = System.getProperty("user.name"); // Fallback to local username
+        }
+        return username;
+    }
+
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        fetch('/getUsername')
+            .then(response => response.text())
+            .then(username => {
+                const userElement = document.getElementById("user-name");
+                userElement.textContent = username || "Guest User";
+            })
+            .catch(err => {
+                console.error("Error fetching username:", err);
+                document.getElementById("user-name").textContent = "Guest User";
+            });
+    });
+</script>
+
+<div id="user-info">
+    Hello, <span id="user-name">Loading...</span>
+</div>
