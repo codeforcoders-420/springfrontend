@@ -20,7 +20,7 @@ html {
  	position: fixed;
     top: 0;
     left: 0;
-    width: 100%;
+    width: 90%;
     background: #fff; /* White background */
     box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
     z-index: 10;
@@ -30,11 +30,40 @@ html {
     align-items: center;
 }
 
+/* Center nav-right horizontally */
+.nav-container {
+	display: flex;
+    justify-content: space-between; /* Ensure space between title and navigation */
+    align-items: center;
+    position: relative;
+    background-color: white;
+    height: 60px;
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+    padding: 0 20px;
+}
+
+/* Navigation links centered */
+.nav-right {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+}
+
+/* User info positioned top-right */
+.user-info {
+    position: absolute;
+    top: 10px; /* Spacing from the top */
+    right: 20px; /* Spacing from the right */
+    font-size: 14px;
+    color: #333; /* Text color */
+    font-weight: bold;
+}
+
 .navbar {
 position: fixed;
     top: 0;
     left: 0;
-    width: 100%;
+    width: 98%;
     background: #fff; /* White background */
     box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
     z-index: 10;
@@ -179,6 +208,12 @@ body {
     align-items: center;
     justify-content: center;
     text-align: center;
+}
+
+#section1 {
+    background: linear-gradient(135deg, #e8f5e9, #ffffff);
+    padding: 25px 10px; /* Adjust padding for a clean layout */
+    border-radius: 4px; /* Optional for rounded corners */
 }
 
 /* Calendar Container */

@@ -40,6 +40,11 @@
 
 			<button class="menu-button" onclick="showSection('impactReport')">Impact
 				Report</button>
+
+			<button class="menu-button" onclick="showSection('Db2DB')">Db2DB</button>
+			<button class="menu-button" onclick="showSection('standard-queries')">Standard
+				Queries</button>
+
 			<div class="upload-section">
 				<button id="upload-button" class="uploadbutton">Upload
 					Latest Files</button>
@@ -202,6 +207,104 @@
 					</div>
 				</div>
 			</div>
+
+			<!-- Db2DB Generator Section -->
+			<div id="Db2DB" class="section">
+				<div class="right-pane">
+					<div class="right-section">
+						<h3>Explanation / Summary</h3>
+						<p>[Impact Report Content will go here]</p>
+					</div>
+					<div class="right-section">
+						<h3>Utility</h3>
+						<form id="impactReportForm">
+							<h3>Select Fee Schedule</h3>
+							<select id="feeScheduleDropdown">
+								<option value="">--Select Fee Schedule--</option>
+								<option value="Schedule 1">Schedule 1</option>
+								<option value="Schedule 2">Schedule 2</option>
+							</select>
+
+							<div class="source-destination-container">
+								<div class="select-options">
+									<div class="select-source">
+										<h4>Select Source</h4>
+										<label><input type="radio" name="source" value="CFG">
+											CFG</label><br> <label><input type="radio" name="source"
+											value="INT"> INT</label><br> <label><input
+											type="radio" name="source" value="CRT"> CRT</label><br>
+										<label><input type="radio" name="source" value="GLD">
+											GLD</label><br> <label><input type="radio" name="source"
+											value="PRD"> PRD</label><br>
+									</div>
+
+									<div class="select-destination">
+										<h4>Select Destination</h4>
+										<label><input type="checkbox" name="destination"
+											value="CFG"> CFG</label><br> <label><input
+											type="checkbox" name="destination" value="INT"> INT</label><br>
+										<label><input type="checkbox" name="destination"
+											value="CRT"> CRT</label><br> <label><input
+											type="checkbox" name="destination" value="GLD"> GLD</label><br>
+										<label><input type="checkbox" name="destination"
+											value="PRD"> PRD</label><br>
+									</div>
+								</div>
+							</div>
+
+							<div class="actions">
+								<button class="validate-button" type="button"
+									onclick="validateSelections()">Validate</button>
+								<button id="resetDb2DbButton" class="reset-button" type="button"
+									onclick="resetSelections()">Reset</button>
+
+							</div>
+
+						</form>
+
+					</div>
+				</div>
+			</div>
+
+		<!-- StandardQueries Generator Section -->
+			<div id="standard-queries" class="section" style="display: flex;">
+
+				<!-- Sidebar with Query Buttons -->
+				<div class="query-buttons-container">
+					<!-- Query buttons will be dynamically generated here -->
+				</div>
+
+				<!-- Floating Query Form -->
+				<div id="query-form-modal" class="modal">
+					<div class="modal-content">
+						<span class="close" onclick="closeQueryForm()">&times;</span>
+						<h3 id="query-title">Query Form</h3>
+						<div class="query-input-container">
+							<label for="input-field" class="input-label">Input Label:</label>
+							<input type="text" id="input-field" class="text-input"
+								placeholder="Enter value here" />
+						</div>
+						<div class="query-content">
+							<label for="query-area" class="query-label">Query Label:</label>
+							<textarea id="query-area" class="query-textarea"
+								placeholder="Enter SQL query here"></textarea>
+						</div>
+						<div class="env-selection">
+							<label for="env-dropdown" class="env-label">Select Env
+								Label:</label> <select id="env-dropdown" class="env-dropdown">
+								<option value="SIT">SIT</option>
+								<option value="UAT">UAT</option>
+								<option value="PROD">PROD</option>
+							</select>
+						</div>
+						<div class="run-query-button">
+							<button id="run-query">Run Query</button>
+						</div>
+					</div>
+				</div>
+			</div>
+
+
 		</div>
 	</div>
 
@@ -551,6 +654,214 @@ function uploadToTFS(storyNumber) {
 	</script>
 
 
+	<script> 
+
+window.onload = function () {
+    fetch('/getFeeSchedules')
+        .then(response => response.json())
+        .then(data => {
+            const dropdown = document.getElementById('feeScheduleDropdown');
+            data.forEach(fs_id => {
+                const option = document.createElement('option');
+                option.value = fs_id;
+                option.text = fs_id;
+                dropdown.appendChild(option);
+            });
+        });
+};
+
+// Toggle source selection (disable other options)
+function toggleSource() {
+    const radios = document.getElementsByName('source');
+    radios.forEach(radio => {
+        if (!radio.checked) {
+            radio.disabled = true;
+        }
+    });
+}
+
+// Reset disabled state when unchecking all
+function resetSourceSelection() {
+    const radios = document.getElementsByName('source');
+    radios.forEach(radio => {
+        radio.disabled = false;
+    });
+}
+
+// Validate button functionality
+function validateDb2Db() {
+    const feeSchedule = document.getElementById('feeScheduleDropdown').value;
+    const source = document.querySelector('input[name="source"]:checked')?.value;
+    const destinations = Array.from(
+        document.querySelectorAll('input[name="destination"]:checked')
+    ).map(checkbox => checkbox.value);
+
+    if (!feeSchedule || !source || destinations.length === 0) {
+        alert('Please fill in all required fields.');
+        return;
+    }
+
+    // Send data to backend
+    fetch('/validateDb2Db', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ feeSchedule, source, destinations }),
+    })
+        .then(response => response.json())
+        .then(data => {
+            alert('Validation complete: ' + JSON.stringify(data));
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+}
+
+function resetSelections() {
+    // Reset the radio buttons in the 'Select Source' section
+    document.querySelectorAll('input[type="radio"]').forEach(radio => {
+        radio.checked = false; // Uncheck all radio buttons
+        radio.disabled = false; // Enable all radio buttons
+    });
+
+    // Reset the checkboxes in the 'Select Destination' section
+    document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+        checkbox.checked = false; // Uncheck all checkboxes
+    });
+
+    // If there's any additional logic to reset the dropdown, add it here
+    const feeScheduleDropdown = document.getElementById('feeScheduleDropdown'); // Replace with your actual dropdown ID
+    if (feeScheduleDropdown) {
+        feeScheduleDropdown.selectedIndex = 0; // Reset dropdown to the first option
+    }
+}
+
+
+</script>
+
+	<script> 
+
+	function validateSelections() {
+	    // Collect selected fee schedule value
+	    const feeSchedule = document.getElementById('feeScheduleDropdown').value;
+	    if (!feeSchedule) {
+	        alert("Please select a Fee Schedule.");
+	        return;
+	    }
+
+	    // Collect selected source value
+	    const source = document.querySelector('input[name="source"]:checked')?.value;
+	    if (!source) {
+	        alert("Please select a Source value.");
+	        return;
+	    }
+
+	    // Collect selected destination values
+	    const destinations = Array.from(document.querySelectorAll('input[name="destination"]:checked'))
+	        .map(checkbox => checkbox.value);
+	    if (destinations.length === 0) {
+	        alert("Please select at least one Destination value.");
+	        return;
+	    }
+
+	    // Prepare the payload
+	    const payload = {
+	        feeSchedule: feeSchedule,
+	        source: source,
+	        destinations: destinations
+	    };
+
+	    // Send data to the backend using fetch
+	    fetch("/db2db/validateDb2Db", {
+	        method: "POST",
+	        headers: {
+	            "Content-Type": "application/json"
+	        },
+	        body: JSON.stringify(payload)
+	    })
+	        .then(response => {
+	            if (!response.ok) {
+	                throw new Error("Failed to validate.");
+	            }
+	            return response.json();
+	        })
+	        .then(data => {
+	            alert("Validation successful: " + data.message);
+	        })
+	        .catch(error => {
+	            console.error("Error:", error);
+	            alert("An error occurred during validation.");
+	        });
+	}
+
+</script>
+
+	<script>
+
+	function openQueryForm(queryTitle) {
+	    const modal = document.getElementById("query-form-modal");
+	    modal.style.display = "block";
+
+	    const queryTitleElement = document.getElementById("query-title");
+	    queryTitleElement.innerText = queryTitle;
+
+	    const predefinedQueries = {
+	        "Query 1": "SELECT * FROM Employee;",
+	        "Query 2": "SELECT * FROM Department;",
+	        "Query 3": "SELECT COUNT(*) FROM Salary WHERE amount > 5000;",
+	        // Add more queries as needed
+	    };
+
+	    const queryArea = document.getElementById("query-area");
+	    queryArea.value = predefinedQueries[queryTitle] || "SELECT * FROM TableName;";
+	}
+
+	function closeQueryForm() {
+	    const modal = document.getElementById("query-form-modal");
+	    modal.style.display = "none";
+	}
+	
+	function createQueryButtons() {
+	    const queryButtonsContainer = document.querySelector(".query-buttons-container");
+	    queryButtonsContainer.innerHTML = ""; // Clear existing buttons if any
+
+	    const totalQueries = 5; // Adjust the number of queries here
+	    for (let i = 1; i <= totalQueries; i++) {
+	        const button = document.createElement("button");
+	        button.textContent = `Query ${i}`;
+	        button.onclick = () => openQueryForm(`Query ${i}`);
+	        queryButtonsContainer.appendChild(button);
+	    }
+	}
+
+	// Handle Run Query
+	document.getElementById("run-query").onclick = function () {
+    const queryTitle = document.getElementById("query-title").textContent;
+    const inputField = document.getElementById("input-field").value;
+    const queryArea = document.getElementById("query-area").value;
+    const selectedEnv = document.getElementById("env-dropdown").value;
+
+    // Fetch logic for backend API
+    fetch("/runStandardQuery", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ queryTitle, inputField, queryArea, selectedEnv }),
+    })
+        .then((response) => response.json())
+        .then((data) => {
+            alert("Query executed successfully!");
+            closeQueryForm();
+        })
+        .catch((error) => {
+            alert("Error executing query: " + error.message);
+        });
+};
+
+window.onload = createQueryButtons;
+
+
+</script>
 
 </body>
 </html>

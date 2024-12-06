@@ -10,6 +10,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collections;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -18,6 +19,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -25,8 +27,10 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import com.test.spring.boot.model.ValidationResult;
 import com.test.spring.boot.readfile.ExcelReaderService;
+import com.test.spring.boot.readfile.QueryRequest;
 import com.test.spring.boot.readfile.SourceFileValidation;
 import com.test.spring.boot.readfile.ClaimsImpactAnalysis;
+import com.test.spring.boot.readfile.Db2Dbcompare;
 
 import java.io.FileInputStream;
 import java.io.FileWriter;
@@ -46,6 +50,11 @@ public class ExcelController {
 
 	@Autowired
 	private SourceFileValidation sourceFileValidation;
+
+	@Autowired
+	private Db2Dbcompare db2Dbcompare;
+	
+
 
 	private static final String SHARE_FOLDER_PATH = "C:\\Users\\rajas\\Desktop\\TFS Search\\";
 
@@ -120,45 +129,88 @@ public class ExcelController {
 	public String getOutputFilePath() {
 		return excelReaderService.getOutputFilePath();
 	}
-	
+
 	@GetMapping("/preview")
 	public List<List<String>> previewExcel() throws IOException {
-        String filePath = "C:\\Users\\rajas\\Desktop\\Excelcompare\\PreviewTemplate.xlsx"; // Replace with your shared path
-        List<List<String>> excelData = new ArrayList<>();
-        try (FileInputStream fis = new FileInputStream(filePath);
-             Workbook workbook = new XSSFWorkbook(fis)) {
-            Sheet sheet = workbook.getSheetAt(0); // Get the first sheet
-            for (Row row : sheet) {
-                List<String> rowData = new ArrayList<>();
-                for (Cell cell : row) {
-                    rowData.add(cell.toString());
-                }
-                excelData.add(rowData);
-            }
-        }
-        return excelData; // Returns the Excel data as a JSON object
-    }
-	
-	@PostMapping("/process-impact-report")
-	public ResponseEntity<String> processImpactReport(
-	        @RequestParam("file") MultipartFile file,
-	        @RequestParam("deployedDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate deployedDate) {
-	    try {
-	        // Save file to a temporary location or process directly
-	        Path tempFile = Files.createTempFile("impact-report-", file.getOriginalFilename());
-	        file.transferTo(tempFile.toFile());
-
-	        // Call the ClaimsImpactAnalysis method with file location and date
-	        ClaimsImpactAnalysis analysis = new ClaimsImpactAnalysis();
-	        analysis.process(tempFile.toString(), deployedDate.toString());
-
-	        // Clean up temp file
-	        Files.deleteIfExists(tempFile);
-
-	        return ResponseEntity.ok("Impact report processed successfully!");
-	    } catch (Exception e) {
-	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error: " + e.getMessage());
-	    }
+		String filePath = "C:\\Users\\rajas\\Desktop\\Excelcompare\\PreviewTemplate.xlsx"; // Replace with your shared
+																							// path
+		List<List<String>> excelData = new ArrayList<>();
+		try (FileInputStream fis = new FileInputStream(filePath); Workbook workbook = new XSSFWorkbook(fis)) {
+			Sheet sheet = workbook.getSheetAt(0); // Get the first sheet
+			for (Row row : sheet) {
+				List<String> rowData = new ArrayList<>();
+				for (Cell cell : row) {
+					rowData.add(cell.toString());
+				}
+				excelData.add(rowData);
+			}
+		}
+		return excelData; // Returns the Excel data as a JSON object
 	}
+
+	@PostMapping("/process-impact-report")
+	public ResponseEntity<String> processImpactReport(@RequestParam("file") MultipartFile file,
+			@RequestParam("deployedDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate deployedDate) {
+		try {
+			// Save file to a temporary location or process directly
+			Path tempFile = Files.createTempFile("impact-report-", file.getOriginalFilename());
+			file.transferTo(tempFile.toFile());
+
+			// Call the ClaimsImpactAnalysis method with file location and date
+			ClaimsImpactAnalysis analysis = new ClaimsImpactAnalysis();
+			analysis.process(tempFile.toString(), deployedDate.toString());
+
+			// Clean up temp file
+			Files.deleteIfExists(tempFile);
+
+			return ResponseEntity.ok("Impact report processed successfully!");
+		} catch (Exception e) {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error: " + e.getMessage());
+		}
+	}
+
+	@GetMapping("/getFeeSchedules")
+	public String getFeeSchedules() {
+		// List<String> feeSchedules = jdbcTemplate.queryForList("SELECT FS_ID FROM
+		// feescheduletable", String.class);
+		String fshid = "INDMED";
+		return fshid;
+	}
+
+	private void database2Dbcompare(String feeSchedule, String source, List<String> destinations) {
+		// Add your logic for DB to DB comparison here
+	}
+
+	@PostMapping("/resetEndpoint")
+	public ResponseEntity<String> resetEndpoint(@RequestParam(required = false) String storyNumber) {
+		if (storyNumber == null || storyNumber.isEmpty()) {
+			return ResponseEntity.badRequest().body("Missing storyNumber");
+		}
+		// Perform reset logic
+		return ResponseEntity.ok("Reset successful");
+	}
+
+	@PostMapping("/db2db/validateDb2Db")
+	public ResponseEntity<Map<String, String>> validateDb2Db(@RequestBody Map<String, Object> request) {
+		try {
+			String feeSchedule = (String) request.get("feeSchedule");
+			String source = (String) request.get("source");
+			List<String> destinations = (List<String>) request.get("destinations");
+
+			// Call the Db2Dbcompare method
+			db2Dbcompare.compare(source, destinations, feeSchedule);
+
+			// Return success response
+			Map<String, String> response = new HashMap<>();
+			response.put("message", "Validation completed successfully!");
+			return ResponseEntity.ok(response);
+		} catch (Exception e) {
+			// Handle any errors and return failure response
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+					.body(Collections.singletonMap("message", "Validation failed: " + e.getMessage()));
+		}
+	}
+	
+
 
 }

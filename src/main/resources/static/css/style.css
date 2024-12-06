@@ -637,3 +637,191 @@ input[type="date"] {
 .validate-button:hover {
     background-color: #0056b3;
 }
+
+.utility-section {
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.source-destination-container {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+    width: 100%;
+}
+
+.source-section, .destination-section {
+    flex: 1;
+    margin-right: 10px;
+}
+
+.destination-section {
+    margin-right: 0;
+}
+
+.radio-group, .checkbox-group {
+    margin-top: 10px;
+}
+
+
+.button-group {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.validate-button, .reset-button {
+    background-color: #007bff; /* Blue for validate */
+    color: #fff;
+    padding: 10px 20px; /* Adjusted padding for consistent size */
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-right: 10px;
+    font-size: 16px; /* Consistent font size */
+    width: 150px; /* Fixed width for alignment */
+    text-align: center; /* Ensures text is centered */
+}
+
+.reset-button {
+    background-color: #dc3545; /* Red for reset */
+}
+
+.validate-button:hover {
+    background-color: #0056b3;
+}
+
+.reset-button:hover {
+    background-color: #c82333;
+}
+
+.button-group button:last-child {
+    margin-right: 0; /* Removes margin from the last button */
+}
+
+.utility-section {
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    width: 400px;
+    margin: auto;
+}
+
+.select-options {
+    display: flex;
+    justify-content: space-between;
+    margin: 20px 0;
+}
+
+.actions {
+    text-align: center;
+}
+
+#standard-queries {
+    display: flex;
+    margin: 20px;
+    background-color: #f5f5f5;
+    border-radius: 8px;
+    padding: 15px;
+    gap: 20px;
+}
+
+/* Query Sidebar */
+.query-buttons-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 10px;
+    width: 30%;
+    padding: 10px;
+    overflow-y: auto;
+    max-height: 600px;
+    border-right: 1px solid #ddd;
+}
+
+.query-buttons-container button {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    text-align: center;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.query-buttons-container button:hover {
+    background-color: #45a049;
+}
+
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.4);
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 15% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 50%;
+    border-radius: 10px;
+}
+
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+/* Form Elements */
+.input-label,
+.query-label,
+.env-label {
+    display: block;
+    margin: 10px 0 5px;
+}
+
+.text-input,
+.query-textarea,
+.env-dropdown {
+    width: 100%;
+    padding: 10px;
+    margin: 5px 0 10px;
+}
+
+.run-query-button {
+    text-align: center;
+}
+
+.run-query-button button {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.run-query-button button:hover {
+    background-color: #45a049;
+}
