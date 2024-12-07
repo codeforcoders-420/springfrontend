@@ -225,30 +225,30 @@
 								<option value="Schedule 2">Schedule 2</option>
 							</select>
 
+							<!-- Updated Source and Destination Section -->
 							<div class="source-destination-container">
-								<div class="select-options">
-									<div class="select-source">
-										<h4>Select Source</h4>
-										<label><input type="radio" name="source" value="CFG">
-											CFG</label><br> <label><input type="radio" name="source"
-											value="INT"> INT</label><br> <label><input
-											type="radio" name="source" value="CRT"> CRT</label><br>
-										<label><input type="radio" name="source" value="GLD">
-											GLD</label><br> <label><input type="radio" name="source"
-											value="PRD"> PRD</label><br>
-									</div>
+								<!-- Source Section -->
+								<div class="select-source">
+									<h4>Select Source</h4>
+									<label><input type="radio" name="source" value="CFG">
+										CFG</label><br> <label><input type="radio" name="source"
+										value="INT"> INT</label><br> <label><input
+										type="radio" name="source" value="CRT"> CRT</label><br> <label><input
+										type="radio" name="source" value="GLD"> GLD</label><br> <label><input
+										type="radio" name="source" value="PRD"> PRD</label><br>
+								</div>
 
-									<div class="select-destination">
-										<h4>Select Destination</h4>
-										<label><input type="checkbox" name="destination"
-											value="CFG"> CFG</label><br> <label><input
-											type="checkbox" name="destination" value="INT"> INT</label><br>
-										<label><input type="checkbox" name="destination"
-											value="CRT"> CRT</label><br> <label><input
-											type="checkbox" name="destination" value="GLD"> GLD</label><br>
-										<label><input type="checkbox" name="destination"
-											value="PRD"> PRD</label><br>
-									</div>
+								<!-- Destination Section -->
+								<div class="select-destination">
+									<h4>Select Destination</h4>
+									<label><input type="checkbox" name="destination"
+										value="CFG"> CFG</label><br> <label><input
+										type="checkbox" name="destination" value="INT"> INT</label><br>
+									<label><input type="checkbox" name="destination"
+										value="CRT"> CRT</label><br> <label><input
+										type="checkbox" name="destination" value="GLD"> GLD</label><br>
+									<label><input type="checkbox" name="destination"
+										value="PRD"> PRD</label><br>
 								</div>
 							</div>
 
@@ -257,16 +257,13 @@
 									onclick="validateSelections()">Validate</button>
 								<button id="resetDb2DbButton" class="reset-button" type="button"
 									onclick="resetSelections()">Reset</button>
-
 							</div>
-
 						</form>
-
 					</div>
 				</div>
 			</div>
 
-		<!-- StandardQueries Generator Section -->
+			<!-- StandardQueries Generator Section -->
 			<div id="standard-queries" class="section" style="display: flex;">
 
 				<!-- Sidebar with Query Buttons -->

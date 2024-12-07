@@ -638,26 +638,34 @@ input[type="date"] {
     background-color: #0056b3;
 }
 
-.utility-section {
-    padding: 20px;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-    background-color: #f9f9f9;
+.utility-container {
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
+    align-items: center;
+    justify-content: center;
+    gap: 20px; /* Adds vertical spacing between elements */
 }
 
 .source-destination-container {
     display: flex;
-    justify-content: space-between;
-    margin-top: 20px;
-    width: 100%;
+    justify-content: space-around; /* Ensures spacing between Source and Destination sections */
+    align-items: flex-start; /* Aligns content at the top */
+    margin: 20px auto; /* Centers the container */
+    width: 80%; /* Adjust container width as needed */
+    gap: 30px; /* Adds space between the sections */
 }
 
-.source-section, .destination-section {
-    flex: 1;
-    margin-right: 10px;
+.select-source,
+.select-destination {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start; /* Aligns items to the start of each section */
+    gap: 10px; /* Adds space between the items in each section */
+}
+
+.select-label {
+    font-weight: bold;
+    margin-bottom: 5px;
 }
 
 .destination-section {
@@ -719,7 +727,10 @@ input[type="date"] {
 }
 
 .actions {
-    text-align: center;
+    display: flex;
+    justify-content: center;
+    gap: 15px; /* Adds spacing between Validate and Reset buttons */
+    margin-top: 20px;
 }
 
 #standard-queries {
