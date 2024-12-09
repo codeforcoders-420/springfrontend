@@ -97,3 +97,15 @@ function showDefaultApplication() {
 #message-board ul li {
     margin-bottom: 10px;
 }
+
+message-board-content {
+    list-style-type: none; /* Removes bullets */
+    padding-left: 0; /* Removes default padding */
+    font-size: 1em;
+    color: #FF0000;
+    margin: 0;
+}
+
+.message-board-content li {
+    margin-bottom: 10px;
+}
