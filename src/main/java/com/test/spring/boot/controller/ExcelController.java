@@ -28,6 +28,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import com.test.spring.boot.model.ValidationResult;
 import com.test.spring.boot.readfile.ExcelReaderService;
 import com.test.spring.boot.readfile.QueryRequest;
+import com.test.spring.boot.readfile.RunstandardQuery;
 import com.test.spring.boot.readfile.SourceFileValidation;
 import com.test.spring.boot.readfile.ClaimsImpactAnalysis;
 import com.test.spring.boot.readfile.Db2Dbcompare;
@@ -53,6 +54,9 @@ public class ExcelController {
 
 	@Autowired
 	private Db2Dbcompare db2Dbcompare;
+	
+	@Autowired
+	private RunstandardQuery runstandardQuery ;
 	
 
 
@@ -209,6 +213,18 @@ public class ExcelController {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST)
 					.body(Collections.singletonMap("message", "Validation failed: " + e.getMessage()));
 		}
+	}
+	
+	@PostMapping("/runStandardQuery")
+	public ResponseEntity<String> runStandardQuery(@RequestBody QueryRequest request) {
+	    String inputField = request.getInputField();
+	    String queryText = request.getQueryText();
+	    String selectedEnv = request.getSelectedEnv();
+
+	    // Logic to execute the query
+	    String result = runstandardQuery.runQuery(inputField, queryText, selectedEnv);
+
+	    return ResponseEntity.ok(result);
 	}
 	
 

@@ -1,9 +1,33 @@
 package com.test.spring.boot.readfile;
 
 public class QueryRequest {
-	
-	public static void runQuery (String inputField, String queryText, String selectedEnv) {
-		System.out.println(inputField + queryText + selectedEnv);
+	private String inputField;
+	private String queryText;
+	private String selectedEnv;
+
+	// Getters and Setters
+	public String getInputField() {
+		return inputField;
+	}
+
+	public void setInputField(String inputField) {
+		this.inputField = inputField;
+	}
+
+	public String getQueryText() {
+		return queryText;
+	}
+
+	public void setQueryText(String queryText) {
+		this.queryText = queryText;
+	}
+
+	public String getSelectedEnv() {
+		return selectedEnv;
+	}
+
+	public void setSelectedEnv(String selectedEnv) {
+		this.selectedEnv = selectedEnv;
 	}
 
 }
