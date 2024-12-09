@@ -179,6 +179,8 @@ body {
 	align-items: center;
 	justify-content: center;
 	padding: 50px 0;
+	gap: 30px; /* Adds space between the search and message board */
+    margin-top: 20px;
 }
 
 /* Section Headers */

@@ -49,7 +49,9 @@
 						</div>
 					</div>
 				</div>
+
 				<div class="sccontainer">
+					<!-- Search Container -->
 					<div class="search-container">
 						<label for="search-input" class="search-label">Search by
 							TFS #:</label> <input type="text" id="searchInput"
@@ -57,140 +59,117 @@
 						<button id="searchButton" class="search-button">Search</button>
 					</div>
 
-					<!-- Results Section -->
-					<div class="results-section">
-						<table id="resultsTable" class="result-table"
-							style="display: none;">
-							<thead>
-								<tr>
-									<th>TFS Number</th>
-									<th>Action</th>
-								</tr>
-							</thead>
-							<tbody id="resultsBody"></tbody>
-						</table>
-						<p id="message" class="message"></p>
+					<!-- Message Board -->
+					<div id="message-board" class="message-board">
+						<!-- Title -->
+						<h3 class="message-board-title">Message Board</h3>
+
+						<!-- Content -->
+						<ul class="message-board-content">
+							<li>New Portal is coming up</li>
+							<li>Ready to complete all pending stories by EOD</li>
+						</ul>
 					</div>
 				</div>
+			</header>
+		</section>
 
-				<div id="message-board"
-					style="display: flex; align-items: center; justify-content: center; flex-direction: column; width: 300px; background-color: #ffffff; border-radius: 15px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); padding: 20px;">
-					<!-- Logo or Icon -->
-					<img src="apple-logo.png" alt="Icon"
-						style="width: 40px; height: auto; margin-bottom: 10px;">
-
-					<!-- Title -->
-					<h3
-						style="margin-bottom: 15px; font-size: 1.5em; font-weight: bold; color: #000;">Message
-						Board</h3>
-
-					<!-- Content -->
-					<ul
-						style="list-style-type: disc; padding-left: 20px; font-size: 1em; color: #FF0000; margin: 0;">
-						<li style="margin-bottom: 10px;">New Portal is coming up</li>
-						<li>Ready to complete all pending stories by EOD</li>
-					</ul>
-				</div>
-	</div>
-
-	</header>
-	</section>
-
-	<!-- Section 2: Stories -->
-	<section id="section-2" data-section="stories" class="scroll-section">
-		<div class="container">
-			<h2>Team Collaboration Tools</h2>
-			<p>Enhance workflow and productivity</p>
-			<div class="tool-cards">
-				<div class="tool-card">
-					<h3>RG Stories</h3>
-					<ul>
-						<li><a href="/openRGStory?storyNumber=123456">123456</a></li>
-						<li>345676</li>
-						<li>546732</li>
-						<li>354335</li>
-						<li>657532</li>
-						<li>465763</li>
-						<li>643634</li>
-					</ul>
-				</div>
-				<div class="tool-card">
-					<h3>ENR Stories</h3>
-					<ul>
-						<li>123456</li>
-						<li>345676</li>
-						<li>546732</li>
-						<li>354335</li>
-						<li>657532</li>
-						<li>465763</li>
-						<li>643634</li>
-					</ul>
-				</div>
-				<div class="tool-card">
-					<h3>BF Stories</h3>
-					<ul>
-						<li>123456</li>
-						<li>345676</li>
-						<li>546732</li>
-						<li>354335</li>
-						<li>657532</li>
-						<li>465763</li>
-						<li>643634</li>
-					</ul>
+		<!-- Section 2: Stories -->
+		<section id="section-2" data-section="stories" class="scroll-section">
+			<div class="container">
+				<h2>Team Collaboration Tools</h2>
+				<p>Enhance workflow and productivity</p>
+				<div class="tool-cards">
+					<div class="tool-card">
+						<h3>RG Stories</h3>
+						<ul>
+							<li><a href="/openRGStory?storyNumber=123456">123456</a></li>
+							<li>345676</li>
+							<li>546732</li>
+							<li>354335</li>
+							<li>657532</li>
+							<li>465763</li>
+							<li>643634</li>
+						</ul>
+					</div>
+					<div class="tool-card">
+						<h3>ENR Stories</h3>
+						<ul>
+							<li>123456</li>
+							<li>345676</li>
+							<li>546732</li>
+							<li>354335</li>
+							<li>657532</li>
+							<li>465763</li>
+							<li>643634</li>
+						</ul>
+					</div>
+					<div class="tool-card">
+						<h3>BF Stories</h3>
+						<ul>
+							<li>123456</li>
+							<li>345676</li>
+							<li>546732</li>
+							<li>354335</li>
+							<li>657532</li>
+							<li>465763</li>
+							<li>643634</li>
+						</ul>
+					</div>
 				</div>
 			</div>
-		</div>
-	</section>
+		</section>
 
-	<!-- Section 3: Tools -->
-	<section id="individualtools" data-section="indtools">
-		<div class="individualtools-section">
-			<h3 class="section-title">Stand-alone Tools</h3>
-			<div class="individualtools-container">
-				<div class="individualtools-card">
-					<h4 class="individualtools-title">Peer Review</h4>
-					<p class="individualtools-description">Validate peer reviews
-						efficiently.</p>
-					<button class="individualtools-button">Open</button>
-				</div>
-				<div class="individualtools-card">
-					<h4 class="individualtools-title">DB to DB</h4>
-					<p class="individualtools-description">Compare databases
-						seamlessly.</p>
-					<button class="individualtools-button">Open</button>
-				</div>
-				<div class="individualtools-card">
-					<h4 class="individualtools-title">Pre-Impact</h4>
-					<p class="individualtools-description">Pre-check impact
-						analysis.</p>
-					<button class="individualtools-button">Open</button>
-				</div>
-				<div class="individualtools-card">
-					<h4 class="individualtools-title">Analyst Checklist</h4>
-					<p class="individualtools-description">Ensure thorough reviews.</p>
-					<button class="individualtools-button">Open</button>
-				</div>
-				<div class="individualtools-card">
-					<h4 class="individualtools-title">Standard Queries</h4>
-					<p class="individualtools-description">Run standard query
-						checks.</p>
-					<button class="individualtools-button">Open</button>
-				</div>
-				<div class="individualtools-card">
-					<h4 class="individualtools-title">PDD</h4>
-					<p class="individualtools-description">Process documentation
-						details.</p>
-					<button class="individualtools-button">Open</button>
-				</div>
-				<div class="individualtools-card">
-					<h4 class="individualtools-title">[Place Holder]</h4>
-					<p class="individualtools-description">Future functionality
-						here.</p>
-					<button class="individualtools-button">Open</button>
+		<!-- Section 3: Tools -->
+		<section id="individualtools" data-section="indtools">
+			<div class="individualtools-section">
+				<h3 class="section-title">Stand-alone Tools</h3>
+				<div class="individualtools-container">
+					<div class="individualtools-card">
+						<h4 class="individualtools-title">Peer Review</h4>
+						<p class="individualtools-description">Validate peer reviews
+							efficiently.</p>
+						<button class="individualtools-button">Open</button>
+					</div>
+					<div class="individualtools-card">
+						<h4 class="individualtools-title">DB to DB</h4>
+						<p class="individualtools-description">Compare databases
+							seamlessly.</p>
+						<button class="individualtools-button">Open</button>
+					</div>
+					<div class="individualtools-card">
+						<h4 class="individualtools-title">Pre-Impact</h4>
+						<p class="individualtools-description">Pre-check impact
+							analysis.</p>
+						<button class="individualtools-button">Open</button>
+					</div>
+					<div class="individualtools-card">
+						<h4 class="individualtools-title">Analyst Checklist</h4>
+						<p class="individualtools-description">Ensure thorough
+							reviews.</p>
+						<button class="individualtools-button">Open</button>
+					</div>
+					<div class="individualtools-card">
+						<h4 class="individualtools-title">Standard Queries</h4>
+						<p class="individualtools-description">Run standard query
+							checks.</p>
+						<button class="individualtools-button">Open</button>
+					</div>
+					<div class="individualtools-card">
+						<h4 class="individualtools-title">PDD</h4>
+						<p class="individualtools-description">Process documentation
+							details.</p>
+						<button class="individualtools-button">Open</button>
+					</div>
+					<div class="individualtools-card">
+						<h4 class="individualtools-title">[Place Holder]</h4>
+						<p class="individualtools-description">Future functionality
+							here.</p>
+						<button class="individualtools-button">Open</button>
+					</div>
 				</div>
 			</div>
-		</div>
-	</section>
+		</section>
 	</div>
 
 	<script>
