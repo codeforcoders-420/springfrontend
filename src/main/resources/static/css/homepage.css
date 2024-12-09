@@ -743,3 +743,41 @@ header {
 #results-table a:hover {
 	color: darkblue;
 }
+
+#message-board {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    width: 300px;
+    background-color: #ffffff; /* White background */
+    border-radius: 15px; /* Rounded corners */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+    padding: 20px; /* Inner spacing */
+    text-align: center; /* Center text alignment */
+}
+
+#message-board img {
+    width: 40px; /* Adjust logo size */
+    height: auto;
+    margin-bottom: 10px; /* Space below the logo */
+}
+
+#message-board h3 {
+    font-size: 1.5em;
+    font-weight: bold; /* Bold text */
+    color: #000; /* Black text */
+    margin-bottom: 15px;
+}
+
+#message-board ul {
+    list-style-type: disc;
+    padding-left: 20px;
+    font-size: 1em;
+    color: #FF0000; /* Red text for content */
+    margin: 0; /* Remove default margin */
+}
+
+#message-board ul li {
+    margin-bottom: 10px; /* Space between list items */
+}
