@@ -1,0 +1,212 @@
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.socket.config.annotation.EnableWebSocket;
+import org.springframework.web.socket.config.annotation.WebSocketConfigurer;
+import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry;
+
+@Configuration
+@EnableWebSocket
+public class WebSocketConfig implements WebSocketConfigurer {
+    @Override
+    public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
+        registry.addHandler(new ProgressWebSocketHandler(), "/progress").setAllowedOrigins("*");
+    }
+}
+
+
+*********************************
+
+import org.springframework.web.socket.TextMessage;
+import org.springframework.web.socket.WebSocketSession;
+import org.springframework.web.socket.handler.TextWebSocketHandler;
+
+public class ProgressWebSocketHandler extends TextWebSocketHandler {
+
+    @Override
+    public void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
+        // Simulating progress updates
+        for (int i = 0; i <= 100; i += 10) {
+            Thread.sleep(1000); // Simulate processing
+            session.sendMessage(new TextMessage("Progress: " + i + "%"));
+        }
+        session.sendMessage(new TextMessage("Status: Completed!"));
+    }
+}
+
+
+*********************************
+<div id="change-file-generator">
+    <h3>Change File Generator</h3>
+    <button id="start-process">Start Process</button>
+    <div class="progress-container">
+        <div id="progress-bar" class="progress-bar"></div>
+        <p id="progress-text">Waiting to start...</p>
+    </div>
+</div>
+
+*********************************
+
+.progress-container {
+    width: 100%;
+    background-color: #e0e0e0;
+    border-radius: 5px;
+    margin: 10px 0;
+    overflow: hidden;
+    height: 20px;
+    position: relative;
+}
+
+.progress-bar {
+    height: 100%;
+    width: 0%;
+    background-color: #4caf50;
+    text-align: center;
+    line-height: 20px;
+    color: white;
+    border-radius: 5px;
+    transition: width 0.3s ease;
+}
+
+#progress-text {
+    margin-top: 10px;
+    font-size: 14px;
+    color: #333;
+}
+
+
+
+*********************************
+document.getElementById('start-process').addEventListener('click', function () {
+    const progressBar = document.getElementById('progress-bar');
+    const progressText = document.getElementById('progress-text');
+
+    // Reset progress bar and text
+    progressBar.style.width = "0%";
+    progressText.textContent = "Starting...";
+
+    // Establish WebSocket connection
+    const socket = new WebSocket("ws://localhost:8080/progress");
+
+    socket.onmessage = function (event) {
+        const message = event.data;
+
+        if (message.startsWith("Progress:")) {
+            // Update progress bar
+            const progressValue = parseInt(message.replace("Progress: ", "").replace("%", ""));
+            progressBar.style.width = `${progressValue}%`;
+            progressText.textContent = `Progress: ${progressValue}%`;
+        } else {
+            // Display final status
+            progressText.textContent = message;
+            if (message.includes("Completed")) {
+                progressBar.style.backgroundColor = "#4caf50"; // Green for success
+            } else if (message.includes("Error") || message.includes("Cancelled")) {
+                progressBar.style.backgroundColor = "red"; // Red for failure
+            }
+        }
+    };
+
+    socket.onerror = function () {
+        progressText.textContent = "Error connecting to the server!";
+        progressBar.style.backgroundColor = "red";
+    };
+
+    socket.onclose = function () {
+        progressText.textContent += " - Connection closed.";
+    };
+});
+
+
+
+*********************************
+private void simulateChangeFileProcessing(WebSocketSession session) throws Exception {
+    for (int i = 0; i <= 100; i += 20) {
+        Thread.sleep(2000); // Simulate processing
+        session.sendMessage(new TextMessage("Progress: " + i + "%"));
+    }
+    session.sendMessage(new TextMessage("Status: Change File Generated Successfully!"));
+}
+
+
+
+
+*********************************
+import org.springframework.web.socket.TextMessage;
+import org.springframework.web.socket.WebSocketSession;
+import org.springframework.web.socket.handler.TextWebSocketHandler;
+
+public class ProgressWebSocketHandler extends TextWebSocketHandler {
+
+    private final ChangeFileService changeFileService; // Service containing runfilecompare()
+
+    // Constructor to inject service
+    public ProgressWebSocketHandler(ChangeFileService changeFileService) {
+        this.changeFileService = changeFileService;
+    }
+
+    @Override
+    public void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
+        try {
+            // Call the method that runs the process and sends progress
+            changeFileService.runFileCompare(session);
+        } catch (Exception e) {
+            session.sendMessage(new TextMessage("Status: Error occurred - " + e.getMessage()));
+        }
+    }
+}
+
+
+
+
+*********************************
+import org.springframework.stereotype.Service;
+import org.springframework.web.socket.TextMessage;
+import org.springframework.web.socket.WebSocketSession;
+
+@Service
+public class ChangeFileService {
+
+    public void runFileCompare(WebSocketSession session) throws Exception {
+        int totalSteps = 100; // Example total steps, adjust as needed
+
+        for (int i = 1; i <= totalSteps; i++) {
+            // Simulate actual processing step (replace this with your real logic)
+            Thread.sleep(500); // Simulate work for each step
+
+            // Calculate percentage
+            int progress = (i * 100) / totalSteps;
+
+            // Send progress update to WebSocket client
+            session.sendMessage(new TextMessage("Progress: " + progress + "%"));
+        }
+
+        // Final status message
+        session.sendMessage(new TextMessage("Status: Completed!"));
+    }
+}
+
+
+
+
+*********************************
+
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.socket.config.annotation.EnableWebSocket;
+import org.springframework.web.socket.config.annotation.WebSocketConfigurer;
+import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry;
+import org.springframework.beans.factory.annotation.Autowired;
+
+@Configuration
+@EnableWebSocket
+public class WebSocketConfig implements WebSocketConfigurer {
+
+    @Autowired
+    private ChangeFileService changeFileService;
+
+    @Override
+    public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
+        registry.addHandler(new ProgressWebSocketHandler(changeFileService), "/progress").setAllowedOrigins("*");
+    }
+}
+
+
+
