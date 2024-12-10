@@ -1,0 +1,166 @@
+<div class="app-section" id="application-1">
+    <h3>Claims Impact Report Compare</h3>
+    <label>Select IR Team Claims Report:</label>
+    <input type="file" id="ir-team-file" />
+    <label>Select MN Team Claims Report:</label>
+    <input type="file" id="mn-team-file" />
+    <button id="compare-button" onclick="startProcess('application-1')">Compare</button>
+    <div class="progress-container">
+        <div id="progress-bar-application-1" class="progress-bar"></div>
+        <p id="progress-text-application-1">Waiting to start...</p>
+    </div>
+</div>
+
+
+.progress-container {
+    width: 100%;
+    background-color: #e0e0e0;
+    border-radius: 5px;
+    margin: 10px 0;
+    overflow: hidden;
+    height: 20px;
+    position: relative;
+}
+
+.progress-bar {
+    height: 100%;
+    width: 0%;
+    background-color: #4caf50;
+    text-align: center;
+    line-height: 20px;
+    color: white;
+    border-radius: 5px;
+    transition: width 0.3s ease;
+}
+
+#progress-text-application-1 {
+    margin-top: 10px;
+    font-size: 14px;
+    color: #333;
+}
+
+
+function startProcess(appId) {
+    const progressBar = document.getElementById(`progress-bar-${appId}`);
+    const progressText = document.getElementById(`progress-text-${appId}`);
+    
+    // Reset progress bar
+    progressBar.style.width = "0%";
+    progressText.textContent = "Starting...";
+
+    // Establish WebSocket or SSE connection
+    const socket = new WebSocket("ws://localhost:8080/progress");
+    
+    socket.onmessage = function (event) {
+        const message = event.data;
+        
+        if (message.startsWith("Progress")) {
+            const progressValue = parseInt(message.replace("Progress: ", "").replace("%", ""));
+            progressBar.style.width = `${progressValue}%`;
+            progressText.textContent = `Progress: ${progressValue}%`;
+        } else {
+            // Handle status messages
+            progressText.textContent = message;
+            if (message.includes("Completed")) {
+                progressBar.style.backgroundColor = "#4caf50"; // Green on success
+            } else if (message.includes("Error") || message.includes("Cancelled")) {
+                progressBar.style.backgroundColor = "red"; // Red on failure
+            }
+        }
+    };
+
+    socket.onerror = function () {
+        progressText.textContent = "Error connecting to the server!";
+        progressBar.style.backgroundColor = "red";
+    };
+
+    socket.onclose = function () {
+        progressText.textContent += " - Connection closed.";
+    };
+}
+
+import org.springframework.web.socket.TextMessage;
+import org.springframework.web.socket.WebSocketSession;
+import org.springframework.web.socket.handler.TextWebSocketHandler;
+
+public class MultiAppWebSocketHandler extends TextWebSocketHandler {
+    @Override
+    public void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
+        // Identify the application ID from the client message
+        String applicationId = message.getPayload(); // e.g., "application-1"
+        switch (applicationId) {
+            case "application-1":
+                handleApplication1Progress(session);
+                break;
+            case "application-2":
+                handleApplication2Progress(session);
+                break;
+            // Add cases for other applications
+        }
+    }
+
+    private void handleApplication1Progress(WebSocketSession session) throws Exception {
+        for (int i = 0; i <= 100; i += 10) {
+            Thread.sleep(1000); // Simulate processing
+            session.sendMessage(new TextMessage("Progress: " + i + "%"));
+        }
+        session.sendMessage(new TextMessage("Status: Completed!"));
+    }
+
+    private void handleApplication2Progress(WebSocketSession session) throws Exception {
+        for (int i = 0; i <= 100; i += 20) {
+            Thread.sleep(500); // Simulate faster processing
+            session.sendMessage(new TextMessage("Progress: " + i + "%"));
+        }
+        session.sendMessage(new TextMessage("Status: Application 2 Completed!"));
+    }
+}
+
+
+
+function startProcess(appId) {
+    const socket = new WebSocket("ws://localhost:8080/progress");
+    socket.onopen = function () {
+        socket.send(appId); // Send the application ID to the server
+    };
+    // The rest of the JavaScript remains the same
+}
+
+
+
+
+const applications = [
+    { id: "application-1", name: "Claims Impact Report Compare" },
+    { id: "application-2", name: "Change File Generator" },
+    // Add other applications
+];
+
+applications.forEach(app => {
+    document.body.innerHTML += `
+        <div class="app-section" id="${app.id}">
+            <h3>${app.name}</h3>
+            <button onclick="startProcess('${app.id}')">Start</button>
+            <div class="progress-container">
+                <div id="progress-bar-${app.id}" class="progress-bar"></div>
+                <p id="progress-text-${app.id}">Waiting to start...</p>
+            </div>
+        </div>
+    `;
+});
+
+private final Map<String, Consumer<WebSocketSession>> appHandlers = Map.of(
+    "application-1", this::handleApplication1Progress,
+    "application-2", this::handleApplication2Progress
+);
+
+@Override
+public void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
+    String applicationId = message.getPayload();
+    if (appHandlers.containsKey(applicationId)) {
+        appHandlers.get(applicationId).accept(session);
+    } else {
+        session.sendMessage(new TextMessage("Error: Invalid Application ID"));
+    }
+}
+
+
