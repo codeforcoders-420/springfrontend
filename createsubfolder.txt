@@ -1,0 +1,188 @@
+@GetMapping("/openRGStory")
+public String openRGStory(@RequestParam("storyNumber") String storyNumber, Model model) {
+    // Path to the story folder
+    File storyFolder = new File(SHARE_FOLDER_PATH, storyNumber);
+
+    // Check if the story folder exists; if not, create it
+    if (!storyFolder.exists()) {
+        boolean created = storyFolder.mkdirs();
+        if (!created) {
+            model.addAttribute("errorMessage", "Failed to create folder for story number: " + storyNumber);
+            return "errorPage"; // Redirect to an error page if folder creation fails
+        }
+    }
+
+    // Define the subfolders to be created inside the story folder
+    String[] subfolders = {
+        "01. Change File",
+        "02. Change File compare",
+        "03. PreDev Db2DB",
+        "04. PostDev Db2DB",
+        "05. Peer Review Validate",
+        "06. PostPRD DB2DB",
+        "07. Claims Impact Report",
+        "08. Claims Impact Report Compare"
+    };
+
+    // Create each subfolder
+    for (String subfolder : subfolders) {
+        File subfolderPath = new File(storyFolder, subfolder);
+        if (!subfolderPath.exists()) {
+            boolean created = subfolderPath.mkdir();
+            if (!created) {
+                model.addAttribute("errorMessage", "Failed to create subfolder: " + subfolder + " for story number: " + storyNumber);
+                return "errorPage"; // Redirect to an error page if subfolder creation fails
+            }
+        }
+    }
+
+    // Add the story number to the model
+    model.addAttribute("storyNumber", storyNumber);
+
+    // Return the name of the template
+    return "detailPage";
+}
+
+
+****************************************************************
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const searchButton = document.getElementById("searchButton");
+        const searchInput = document.getElementById("searchInput");
+        const resultsTable = document.getElementById("resultsTable");
+        const resultsBody = document.getElementById("resultsBody");
+        const message = document.getElementById("message");
+
+        // Event Listener for Search Button
+        searchButton.addEventListener("click", function () {
+            const folderName = searchInput.value.trim();
+            if (!folderName) {
+                message.textContent = "Please enter a TFS # to begin search.";
+                resultsTable.style.display = "none";
+                return;
+            }
+
+            // Clear previous results
+            message.textContent = "";
+            resultsBody.innerHTML = "";
+
+            // Send Request to Backend
+            fetch(`/checkFolder?folderName=${folderName}`)
+                .then((response) => {
+                    if (!response.ok) {
+                        throw new Error("Folder check failed.");
+                    }
+                    return response.json();
+                })
+                .then((data) => {
+                    if (data.exists) {
+                        // Folder exists
+                        resultsTable.style.display = "table";
+                        const row = document.createElement("tr");
+
+                        const tfsCell = document.createElement("td");
+                        tfsCell.innerHTML = `<a href="/openRGStory?storyNumber=${folderName}">${folderName}</a>`;
+                        row.appendChild(tfsCell);
+
+                        const actionCell = document.createElement("td");
+                        actionCell.innerHTML = "<button class='add-button' disabled>Exists</button>";
+                        row.appendChild(actionCell);
+
+                        resultsBody.appendChild(row);
+                    } else {
+                        // Folder does not exist
+                        resultsTable.style.display = "table";
+                        const row = document.createElement("tr");
+
+                        const tfsCell = document.createElement("td");
+                        tfsCell.innerHTML = `<a href="/openRGStory?storyNumber=${folderName}">${folderName}</a>`;
+                        row.appendChild(tfsCell);
+
+                        const actionCell = document.createElement("td");
+                        const addButton = document.createElement("button");
+                        addButton.className = "add-button";
+                        addButton.textContent = "Add";
+                        addButton.addEventListener("click", function () {
+                            // Add folder logic with subfolders
+                            fetch(`/createFolderWithSubfolders?folderName=${folderName}`, { method: "POST" })
+                                .then((createResponse) => {
+                                    if (!createResponse.ok) {
+                                        throw new Error("Folder creation failed.");
+                                    }
+                                    return createResponse.text();
+                                })
+                                .then(() => {
+                                    alert("Folder and subfolders created successfully!");
+                                    addButton.disabled = true;
+                                    addButton.textContent = "Added";
+                                })
+                                .catch((error) => {
+                                    console.error(error);
+                                    alert("Failed to create folder and subfolders.");
+                                });
+                        });
+                        actionCell.appendChild(addButton);
+                        row.appendChild(actionCell);
+
+                        resultsBody.appendChild(row);
+                    }
+                })
+                .catch((error) => {
+                    console.error(error);
+                    message.textContent = "Error occurred while searching.";
+                    resultsTable.style.display = "none";
+                });
+        });
+    });
+</script>
+
+
+
+@PostMapping("/createFolderWithSubfolders")
+public ResponseEntity<String> createFolderWithSubfolders(@RequestParam("folderName") String folderName) {
+    try {
+        // Path to the main folder
+        File mainFolder = new File(SHARE_FOLDER_PATH, folderName);
+
+        // Check if the main folder exists; if not, create it
+        if (!mainFolder.exists()) {
+            boolean mainFolderCreated = mainFolder.mkdirs();
+            if (!mainFolderCreated) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body("Failed to create the main folder.");
+            }
+        }
+
+        // Subfolders to create
+        String[] subfolders = {
+            "01. Change File",
+            "02. Change File compare",
+            "03. PreDev Db2DB",
+            "04. PostDev Db2DB",
+            "05. Peer Review Validate",
+            "06. PostPRD DB2DB",
+            "07. Claims Impact Report",
+            "08. Claims Impact Report Compare"
+        };
+
+        // Create subfolders
+        for (String subfolder : subfolders) {
+            File subfolderPath = new File(mainFolder, subfolder);
+            if (!subfolderPath.exists()) {
+                boolean subfolderCreated = subfolderPath.mkdir();
+                if (!subfolderCreated) {
+                    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                            .body("Failed to create subfolder: " + subfolder);
+                }
+            }
+        }
+
+        return ResponseEntity.ok("Folder and subfolders created successfully.");
+    } catch (Exception e) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred: " + e.getMessage());
+    }
+}
+
+
+
