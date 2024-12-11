@@ -1,0 +1,10 @@
+<nav>
+    <ul>
+        <li><a href="/#home">Home</a></li>
+        <li><a href="/#stories">Stories</a></li>
+        <li><a href="/#tools">Tools</a></li>
+        <!-- Update the "How It Works" link to point to SharePoint -->
+        <li><a href="https://your-sharepoint-site-link" target="_blank" rel="noopener noreferrer">How It Works</a></li>
+        <li><a href="/#contact">Contact</a></li>
+    </ul>
+</nav>
