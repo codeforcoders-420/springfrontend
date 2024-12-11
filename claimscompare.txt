@@ -1,0 +1,90 @@
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
+
+public class ExcelComparisonLatestFeatures {
+    public static void main(String[] args) {
+        var file1Path = "ClaimsReportbyMNteam.xlsx";
+        var file2Path = "ClaimsReportbyIRteam.xlsx";
+        var outputPath = "Comparison_Result.xlsx";
+
+        try (var fis1 = new FileInputStream(file1Path);
+             var fis2 = new FileInputStream(file2Path);
+             var wb1 = new XSSFWorkbook(fis1);
+             var wb2 = new XSSFWorkbook(fis2);
+             var outputWb = new XSSFWorkbook()) {
+
+            var sheet1 = wb1.getSheetAt(0);
+            var sheet2 = wb2.getSheetAt(0);
+
+            // Create output sheets
+            var matchedSheet = outputWb.createSheet("Matched Claims");
+            var mismatchedSheet = outputWb.createSheet("Mismatched Claims");
+
+            // Convert Sheet 2 data to a Set for fast lookup
+            var sheet2Keys = StreamSupport.stream(sheet2.spliterator(), false)
+                    .skip(1) // Skip header
+                    .map(row -> getCellValue(row.getCell(0)))
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toSet());
+
+            // Add headers to output sheets
+            copyRow(sheet1.getRow(0), matchedSheet.createRow(0));
+            copyRow(sheet1.getRow(0), mismatchedSheet.createRow(0));
+
+            // Process Sheet 1 and categorize rows
+            var matchedRowIndex = new int[]{1}; // Use an array for mutable index in lambda
+            var mismatchedRowIndex = new int[]{1};
+
+            StreamSupport.stream(sheet1.spliterator(), false)
+                    .skip(1) // Skip header
+                    .forEach(row -> {
+                        var key = getCellValue(row.getCell(0));
+                        if (key != null) {
+                            if (sheet2Keys.contains(key)) {
+                                copyRow(row, matchedSheet.createRow(matchedRowIndex[0]++));
+                            } else {
+                                copyRow(row, mismatchedSheet.createRow(mismatchedRowIndex[0]++));
+                            }
+                        }
+                    });
+
+            // Write to output file
+            try (var fos = new FileOutputStream(outputPath)) {
+                outputWb.write(fos);
+                System.out.println("Comparison result written to " + outputPath);
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static void copyRow(Row sourceRow, Row targetRow) {
+        if (sourceRow == null) return;
+        for (var i = 0; i < sourceRow.getLastCellNum(); i++) {
+            var sourceCell = sourceRow.getCell(i);
+            var targetCell = targetRow.createCell(i);
+            if (sourceCell != null) {
+                switch (sourceCell.getCellType()) {
+                    case STRING -> targetCell.setCellValue(sourceCell.getStringCellValue());
+                    case NUMERIC -> targetCell.setCellValue(sourceCell.getNumericCellValue());
+                    case BOOLEAN -> targetCell.setCellValue(sourceCell.getBooleanCellValue());
+                    case FORMULA -> targetCell.setCellFormula(sourceCell.getCellFormula());
+                    default -> targetCell.setCellValue(sourceCell.toString());
+                }
+            }
+        }
+    }
+
+    private static String getCellValue(Cell cell) {
+        return cell == null ? null : cell.toString().trim();
+    }
+}
