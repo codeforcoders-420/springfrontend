@@ -29,3 +29,35 @@ Moving forward, I plan to build upon these achievements by deepening my collabor
 
 In sum, this year’s performance reflects a holistic approach that balances innovation, quality, and team cohesion. Through proactive engagement, supportive leadership from my Team Lead, and a shared dedication to excellence, I have not only met key objectives but also set the stage for continued growth and success in the coming year.
 
+*********************************
+
+Year-End Performance Summary
+
+Over the past year, I have demonstrated a strong commitment to proactive problem-solving, innovation, and quality assurance within our team. By consistently seeking opportunities to streamline processes, improve documentation, and introduce cutting-edge automation tools, I have contributed meaningfully to the team’s efficiency, reliability, and overall success.
+
+Key Achievements and Contributions:
+
+Innovation and Collaborative Ideation:
+I maintained frequent and constructive discussions with our Team Lead to explore new innovation avenues. Through these regular ideation sessions, I contributed actionable suggestions that enhanced our project workflows and influenced strategic decisions, ultimately improving both the team’s efficiency and the quality of our deliverables.
+
+Full-Stack Automation Portal Development:
+One of my most significant contributions was the end-to-end development of a centralized web portal to serve as a comprehensive one-stop solution for all automation requirements. Leveraging technologies such as Spring Boot, Java, JavaScript, and CSS, I built a robust, user-friendly application with both front-end and back-end components. This portal consolidated multiple automation tools and documentation into a single, easily accessible platform, greatly streamlining the team’s day-to-day operations.
+
+Proactive Documentation and Triage Management:
+I played a key role in ensuring that all necessary documentation was updated and available prior to daily triage calls. By taking ownership of this process, I helped other teams commence their tasks without delays, improving cross-functional collaboration and maintaining the project’s momentum. Additionally, I carefully handled the triage responsibilities—coordinating with multiple teams and adhering to tight timelines—to ensure issues were addressed swiftly and effectively.
+
+Consistent High-Quality Delivery:
+Over the course of the year, I completed 110 stories and 160 tasks without introducing any Breakfix-related issues. This achievement reflects my meticulous attention to detail, thorough testing, and dedication to delivering stable, production-ready solutions. It also underscores my commitment to quality, as no defects were found in my work by the SQA team.
+
+Automation and Peer Support:
+Beyond my individual contributions, I actively offered guidance and support to my colleagues, especially in areas related to automation and SQL. By helping peers troubleshoot automation scripts and refine database queries, I fostered a collaborative environment where knowledge-sharing and mutual assistance contributed to the team’s overall growth and competency.
+
+Documentation Quality and Process Improvements:
+I took the initiative to identify and resolve issues within the Functional Specifications (FS) and Process Design Documents (PDD), ensuring these critical project assets were clear, accurate, and aligned with project standards. This included a specific focus on cleaning up the INDMED FS to prevent future bugs and misinterpretations. My efforts in maintaining clean, reliable documentation not only reduced the potential for future errors but also facilitated smoother work hand-offs and enhanced overall project transparency.
+
+Looking Ahead:
+
+My goal for the coming year is to build upon these achievements by continuing to innovate, refine our automation strategies, and enhance cross-functional collaboration. I will remain dedicated to quality assurance, thorough documentation, and proactive communication, ensuring that our team continues to operate efficiently and deliver exceptional results.
+
+Overall, this year’s contributions demonstrate my ability to drive positive change, deliver high-quality work, and support our team’s mission through consistent performance, strategic thinking, and a collaborative spirit. I am confident that these accomplishments have set a strong foundation for ongoing improvement and future success.
+
