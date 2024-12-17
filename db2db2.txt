@@ -1,0 +1,147 @@
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
+import java.io.FileOutputStream;
+import java.sql.*;
+import java.util.*;
+import java.util.stream.Collectors;
+
+public class DataComparator {
+
+    // Constants for environments and file output paths
+    private static final List<String> ENVIRONMENTS = List.of("SIT", "UAT", "PROD");
+    private static final String OUTPUT_FOLDER = "C:/ComparisonReports/";
+    private static final String EXCEL_FILE_FORMAT = "%s_to_%s_Comparison.xlsx";
+
+    // Database connection details
+    private static final String DEV_URL = "jdbc:sqlserver://localhost;databaseName=Dev;integratedSecurity=true;";
+    private static final String COMMON_URL_TEMPLATE = "jdbc:sqlserver://localhost;databaseName=%s;integratedSecurity=true;";
+    private static final String TABLE_NAME = "employee_records";
+
+    public static void main(String[] args) {
+        try {
+            Map<String, List<Map<String, Object>>> devData = fetchTableData("DEV", DEV_URL);
+
+            // Iterate through environments and compare
+            for (String env : ENVIRONMENTS) {
+                String envUrl = String.format(COMMON_URL_TEMPLATE, env);
+                Map<String, List<Map<String, Object>>> targetData = fetchTableData(env, envUrl);
+
+                List<Map<String, Object>> differences = compareData(devData, targetData);
+                generateReport(differences, "DEV", env);
+            }
+
+            System.out.println("Comparison reports generated successfully!");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    // Fetch table data as List of Map<String, Object>
+    private static Map<String, List<Map<String, Object>>> fetchTableData(String env, String url) throws SQLException {
+        Map<String, List<Map<String, Object>>> dataMap = new HashMap<>();
+        try (Connection connection = DriverManager.getConnection(url);
+             Statement statement = connection.createStatement();
+             ResultSet resultSet = statement.executeQuery("SELECT * FROM " + TABLE_NAME)) {
+
+            List<Map<String, Object>> records = new ArrayList<>();
+            ResultSetMetaData metaData = resultSet.getMetaData();
+            int columnCount = metaData.getColumnCount();
+
+            while (resultSet.next()) {
+                Map<String, Object> row = new LinkedHashMap<>();
+                for (int i = 1; i <= columnCount; i++) {
+                    row.put(metaData.getColumnName(i), resultSet.getObject(i));
+                }
+                records.add(row);
+            }
+            dataMap.put(env, records);
+        }
+        return dataMap;
+    }
+
+    // Compare two datasets and identify differences
+    private static List<Map<String, Object>> compareData(Map<String, List<Map<String, Object>>> devData,
+                                                         Map<String, List<Map<String, Object>>> targetData) {
+        List<Map<String, Object>> devRecords = devData.values().iterator().next();
+        List<Map<String, Object>> targetRecords = targetData.values().iterator().next();
+
+        List<Map<String, Object>> result = new ArrayList<>();
+
+        // Convert to HashSet for easier comparison
+        Set<Map<String, Object>> devSet = new HashSet<>(devRecords);
+        Set<Map<String, Object>> targetSet = new HashSet<>(targetRecords);
+
+        for (Map<String, Object> devRow : devRecords) {
+            if (!targetSet.contains(devRow)) {
+                Map<String, Object> diffRow = new LinkedHashMap<>(devRow);
+                diffRow.put("Differences", "Available in DEV and not in " + targetData.keySet().iterator().next());
+                result.add(diffRow);
+            }
+        }
+
+        for (Map<String, Object> targetRow : targetRecords) {
+            if (!devSet.contains(targetRow)) {
+                Map<String, Object> diffRow = new LinkedHashMap<>(targetRow);
+                diffRow.put("Differences", "Available in " + targetData.keySet().iterator().next() + " and not in DEV");
+                result.add(diffRow);
+            }
+        }
+
+        // Compare rows with the same keys but different column values
+        for (Map<String, Object> devRow : devRecords) {
+            for (Map<String, Object> targetRow : targetRecords) {
+                if (devRow.keySet().equals(targetRow.keySet())) {
+                    List<String> columnDifferences = devRow.entrySet().stream()
+                            .filter(e -> !Objects.equals(e.getValue(), targetRow.get(e.getKey())))
+                            .map(Map.Entry::getKey)
+                            .collect(Collectors.toList());
+
+                    if (!columnDifferences.isEmpty()) {
+                        Map<String, Object> diffRow = new LinkedHashMap<>(devRow);
+                        diffRow.put("Differences", String.join(", ", columnDifferences));
+                        result.add(diffRow);
+                    }
+                }
+            }
+        }
+
+        return result;
+    }
+
+    // Generate Excel report
+    private static void generateReport(List<Map<String, Object>> data, String sourceEnv, String targetEnv) {
+        String fileName = OUTPUT_FOLDER + String.format(EXCEL_FILE_FORMAT, sourceEnv, targetEnv);
+
+        try (Workbook workbook = new XSSFWorkbook();
+             FileOutputStream fileOut = new FileOutputStream(fileName)) {
+            Sheet sheet = workbook.createSheet("Comparison Report");
+
+            // Write header row
+            if (!data.isEmpty()) {
+                Row headerRow = sheet.createRow(0);
+                int headerCellIndex = 0;
+                for (String key : data.get(0).keySet()) {
+                    headerRow.createCell(headerCellIndex++).setCellValue(key);
+                }
+            }
+
+            // Write data rows
+            int rowIndex = 1;
+            for (Map<String, Object> rowData : data) {
+                Row row = sheet.createRow(rowIndex++);
+                int cellIndex = 0;
+                for (Object value : rowData.values()) {
+                    row.createCell(cellIndex++).setCellValue(value != null ? value.toString() : "");
+                }
+            }
+
+            workbook.write(fileOut);
+            System.out.println("Report generated: " + fileName);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
