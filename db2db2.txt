@@ -5,6 +5,7 @@ import java.io.FileOutputStream;
 import java.sql.*;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.Scanner;
 
 public class DataComparator {
 
@@ -19,13 +20,18 @@ public class DataComparator {
     private static final String TABLE_NAME = "employee_records";
 
     public static void main(String[] args) {
-        try {
-            Map<String, List<Map<String, Object>>> devData = fetchTableData("DEV", DEV_URL);
+        try (Scanner scanner = new Scanner(System.in)) {
+            // Prompt user for Department ID
+            System.out.print("Enter Department ID to filter data: ");
+            String departmentId = scanner.nextLine();
+
+            // Fetch DEV data filtered by Department ID
+            Map<String, List<Map<String, Object>>> devData = fetchTableData("DEV", DEV_URL, departmentId);
 
             // Iterate through environments and compare
             for (String env : ENVIRONMENTS) {
                 String envUrl = String.format(COMMON_URL_TEMPLATE, env);
-                Map<String, List<Map<String, Object>>> targetData = fetchTableData(env, envUrl);
+                Map<String, List<Map<String, Object>>> targetData = fetchTableData(env, envUrl, departmentId);
 
                 List<Map<String, Object>> differences = compareData(devData, targetData);
                 generateReport(differences, "DEV", env);
@@ -39,24 +45,30 @@ public class DataComparator {
     }
 
     // Fetch table data as List of Map<String, Object>
-    private static Map<String, List<Map<String, Object>>> fetchTableData(String env, String url) throws SQLException {
+    private static Map<String, List<Map<String, Object>>> fetchTableData(String env, String url, String departmentId) throws SQLException {
         Map<String, List<Map<String, Object>>> dataMap = new HashMap<>();
+        String query = "SELECT * FROM " + TABLE_NAME + " WHERE DepartmentID = ?";
+
         try (Connection connection = DriverManager.getConnection(url);
-             Statement statement = connection.createStatement();
-             ResultSet resultSet = statement.executeQuery("SELECT * FROM " + TABLE_NAME)) {
+             PreparedStatement preparedStatement = connection.prepareStatement(query)) {
 
-            List<Map<String, Object>> records = new ArrayList<>();
-            ResultSetMetaData metaData = resultSet.getMetaData();
-            int columnCount = metaData.getColumnCount();
+            // Set the Department ID parameter
+            preparedStatement.setString(1, departmentId);
 
-            while (resultSet.next()) {
-                Map<String, Object> row = new LinkedHashMap<>();
-                for (int i = 1; i <= columnCount; i++) {
-                    row.put(metaData.getColumnName(i), resultSet.getObject(i));
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                List<Map<String, Object>> records = new ArrayList<>();
+                ResultSetMetaData metaData = resultSet.getMetaData();
+                int columnCount = metaData.getColumnCount();
+
+                while (resultSet.next()) {
+                    Map<String, Object> row = new LinkedHashMap<>();
+                    for (int i = 1; i <= columnCount; i++) {
+                        row.put(metaData.getColumnName(i), resultSet.getObject(i));
+                    }
+                    records.add(row);
                 }
-                records.add(row);
+                dataMap.put(env, records);
             }
-            dataMap.put(env, records);
         }
         return dataMap;
     }
