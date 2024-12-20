@@ -305,3 +305,14 @@ private static void processRowsWithSameKey(Object reducedKey, List<Map<String, O
 }
 
 
+**************************************************************
+
+private static Map<Object, List<Map<String, Object>>> reduceCompositeKeys(Map<Object, Map<String, Object>> map) {
+    return map.values().stream()
+            .collect(Collectors.groupingBy(
+                    row -> createReducedCompositeKey(row), // Group by reduced composite key
+                    Collectors.toList()                   // Collect rows into a list
+            ));
+}
+
+
