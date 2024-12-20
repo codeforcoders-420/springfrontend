@@ -157,3 +157,68 @@ public class DataComparator {
         }
     }
 }
+
+
+private static List<Map<String, Object>> compareData(Map<String, List<Map<String, Object>>> devData,
+                                                     Map<String, List<Map<String, Object>>> targetData) {
+    List<Map<String, Object>> devRecords = devData.values().iterator().next();
+    List<Map<String, Object>> targetRecords = targetData.values().iterator().next();
+
+    // Convert records to HashMap for quick lookup by Employee_ID
+    Map<Object, Map<String, Object>> devMap = devRecords.stream()
+            .collect(Collectors.toMap(row -> row.get("Employee_ID"), row -> new LinkedHashMap<>(row)));
+
+    Map<Object, Map<String, Object>> targetMap = targetRecords.stream()
+            .collect(Collectors.toMap(row -> row.get("Employee_ID"), row -> new LinkedHashMap<>(row)));
+
+    // Remove exact matches
+    Iterator<Object> devIterator = devMap.keySet().iterator();
+    while (devIterator.hasNext()) {
+        Object employeeId = devIterator.next();
+        Map<String, Object> devRow = devMap.get(employeeId);
+        Map<String, Object> targetRow = targetMap.get(employeeId);
+
+        if (targetRow != null && devRow.equals(targetRow)) {
+            devIterator.remove();
+            targetMap.remove(employeeId); // Remove from target map as well
+        }
+    }
+
+    // Prepare the result list
+    List<Map<String, Object>> result = new ArrayList<>();
+
+    // Process remaining mismatched rows in DEV
+    for (Object employeeId : devMap.keySet()) {
+        Map<String, Object> devRow = devMap.get(employeeId);
+        Map<String, Object> targetRow = targetMap.get(employeeId);
+
+        if (targetRow != null) {
+            // Compare column values
+            List<String> columnDifferences = devRow.keySet().stream()
+                    .filter(column -> !Objects.equals(devRow.get(column), targetRow.get(column)))
+                    .collect(Collectors.toList());
+
+            if (!columnDifferences.isEmpty()) {
+                Map<String, Object> diffRow = new LinkedHashMap<>(devRow);
+                diffRow.put("Differences", String.join(", ", columnDifferences));
+                result.add(diffRow);
+            }
+        } else {
+            // Row exists in DEV but not in target
+            Map<String, Object> diffRow = new LinkedHashMap<>(devRow);
+            diffRow.put("Differences", "Available in DEV and not in target");
+            result.add(diffRow);
+        }
+    }
+
+    // Process remaining rows in TARGET (not found in DEV)
+    for (Object employeeId : targetMap.keySet()) {
+        Map<String, Object> targetRow = targetMap.get(employeeId);
+        Map<String, Object> diffRow = new LinkedHashMap<>(targetRow);
+        diffRow.put("Differences", "Available in target and not in DEV");
+        result.add(diffRow);
+    }
+
+    return result;
+}
+
