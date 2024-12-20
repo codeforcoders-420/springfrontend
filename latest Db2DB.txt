@@ -1,0 +1,179 @@
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
+import java.io.FileOutputStream;
+import java.util.*;
+import java.util.stream.Collectors;
+
+public class DataComparison {
+
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+
+        // Prompt the user for Employee ID
+        System.out.print("Enter Employee ID: ");
+        String employeeId = scanner.nextLine();
+
+        // Example devMap and targetMap initialization
+        Map<Object, Map<String, Object>> devMap = new HashMap<>();
+        Map<Object, Map<String, Object>> targetMap = new HashMap<>();
+
+        // Populate devMap and targetMap with test data here...
+
+        // Perform comparison and get results
+        List<Map<String, Object>> comparisonResults = compareData(devMap, targetMap);
+
+        // Generate report (output to Excel or other desired formats)
+        generateReport(comparisonResults, "Dev", "SIT", employeeId);
+    }
+
+    private static List<Map<String, Object>> compareData(Map<Object, Map<String, Object>> devMap,
+                                                         Map<Object, Map<String, Object>> targetMap) {
+        List<Map<String, Object>> result = new ArrayList<>();
+
+        // Remove exact matches using the full composite key
+        Iterator<Object> devIterator = devMap.keySet().iterator();
+        while (devIterator.hasNext()) {
+            Object fullCompositeKey = devIterator.next();
+            if (targetMap.containsKey(fullCompositeKey) &&
+                    devMap.get(fullCompositeKey).equals(targetMap.get(fullCompositeKey))) {
+                devIterator.remove();
+                targetMap.remove(fullCompositeKey);
+            }
+        }
+
+        // Create reduced composite keys for remaining rows
+        Map<Object, List<Map<String, Object>>> reducedDevMap = reduceCompositeKeys(devMap);
+        Map<Object, List<Map<String, Object>>> reducedTargetMap = reduceCompositeKeys(targetMap);
+
+        // Compare rows in reducedDevMap
+        for (Object reducedKey : reducedDevMap.keySet()) {
+            List<Map<String, Object>> devRows = reducedDevMap.get(reducedKey);
+            List<Map<String, Object>> targetRows = reducedTargetMap.getOrDefault(reducedKey, new ArrayList<>());
+
+            // Process rows with the same reduced key
+            processRowsWithSameKey(reducedKey, devRows, targetRows, "Dev", "SIT", result);
+        }
+
+        // Process rows in reducedTargetMap that are not in reducedDevMap
+        for (Object reducedKey : reducedTargetMap.keySet()) {
+            if (!reducedDevMap.containsKey(reducedKey)) {
+                for (Map<String, Object> targetRow : reducedTargetMap.get(reducedKey)) {
+                    Map<String, Object> diffRow = new LinkedHashMap<>(targetRow);
+                    diffRow.put("Environment", "SIT");
+                    diffRow.put("Difference", "Exist only in target & not exist in source");
+                    result.add(diffRow);
+                }
+            }
+        }
+
+        return result;
+    }
+
+    // Process rows with the same reduced composite key
+    private static void processRowsWithSameKey(Object reducedKey, List<Map<String, Object>> devRows,
+                                               List<Map<String, Object>> targetRows,
+                                               String sourceEnv, String targetEnv,
+                                               List<Map<String, Object>> result) {
+        for (Map<String, Object> devRow : devRows) {
+            boolean foundMatch = false;
+            Iterator<Map<String, Object>> targetIterator = targetRows.iterator();
+
+            while (targetIterator.hasNext()) {
+                Map<String, Object> targetRow = targetIterator.next();
+                List<String> differences = devRow.keySet().stream()
+                        .filter(column -> !isPrimaryKeyColumn(column)) // Skip primary key columns
+                        .filter(column -> !Objects.equals(devRow.get(column), targetRow.get(column)))
+                        .collect(Collectors.toList());
+
+                if (differences.isEmpty()) {
+                    // Exact match found, remove from targetRows
+                    targetIterator.remove();
+                    foundMatch = true;
+                    break;
+                } else if (!differences.isEmpty() && !foundMatch) {
+                    // Partial match found, record differences
+                    Map<String, Object> diffRow = new LinkedHashMap<>(devRow);
+                    diffRow.put("Environment", sourceEnv);
+                    diffRow.put("Difference", String.join(", ", differences) + " mismatch");
+                    result.add(diffRow);
+                    foundMatch = true;
+                }
+            }
+
+            if (!foundMatch) {
+                // No match found in targetRows
+                Map<String, Object> diffRow = new LinkedHashMap<>(devRow);
+                diffRow.put("Environment", sourceEnv);
+                diffRow.put("Difference", "New Entry in Source, not exist in Target");
+                result.add(diffRow);
+            }
+        }
+
+        // Add remaining rows in targetRows to the result
+        for (Map<String, Object> targetRow : targetRows) {
+            Map<String, Object> diffRow = new LinkedHashMap<>(targetRow);
+            diffRow.put("Environment", targetEnv);
+            diffRow.put("Difference", "Exist only in target & not exist in source");
+            result.add(diffRow);
+        }
+    }
+
+    // Method to reduce composite keys (use only primary key columns)
+    private static Map<Object, List<Map<String, Object>>> reduceCompositeKeys(Map<Object, Map<String, Object>> map) {
+        return map.values().stream()
+                .collect(Collectors.groupingBy(
+                        row -> createReducedCompositeKey(row), // Group by reduced composite key
+                        Collectors.toList()                   // Collect rows into a list
+                ));
+    }
+
+    // Helper method to check if a column is part of the primary key
+    private static boolean isPrimaryKeyColumn(String column) {
+        List<String> primaryKeyColumns = List.of("Proc", "Mod1", "Mod2", "Mod3", "Mod4");
+        return primaryKeyColumns.contains(column);
+    }
+
+    // Method to create a reduced composite key for a row
+    private static String createReducedCompositeKey(Map<String, Object> row) {
+        List<String> primaryKeyColumns = List.of("Proc", "Mod1", "Mod2", "Mod3", "Mod4");
+        return primaryKeyColumns.stream()
+                .map(column -> String.valueOf(row.get(column))) // Convert column value to String
+                .collect(Collectors.joining("_"));              // Concatenate with a separator (e.g., "_")
+    }
+
+    // Generate Excel report
+    private static void generateReport(List<Map<String, Object>> data, String sourceEnv, String targetEnv, String employeeId) {
+        String fileName = String.format("%s_to_%s_Comparison_%s.xlsx", sourceEnv, targetEnv, employeeId);
+
+        try (Workbook workbook = new XSSFWorkbook();
+             FileOutputStream fileOut = new FileOutputStream(fileName)) {
+            Sheet sheet = workbook.createSheet("Comparison Report");
+
+            // Write header row
+            if (!data.isEmpty()) {
+                Row headerRow = sheet.createRow(0);
+                int headerCellIndex = 0;
+                for (String key : data.get(0).keySet()) {
+                    headerRow.createCell(headerCellIndex++).setCellValue(key);
+                }
+            }
+
+            // Write data rows
+            int rowIndex = 1;
+            for (Map<String, Object> rowData : data) {
+                Row row = sheet.createRow(rowIndex++);
+                int cellIndex = 0;
+                for (Object value : rowData.values()) {
+                    row.createCell(cellIndex++).setCellValue(value != null ? value.toString() : "");
+                }
+            }
+
+            workbook.write(fileOut);
+            System.out.println("Report generated: " + fileName);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
