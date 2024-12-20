@@ -268,3 +268,21 @@ private static void generateReport(List<Map<String, Object>> data, String source
     }
 }
 
+
+************************
+
+// Convert records to HashMap for quick lookup by composite key
+Map<Object, Map<String, Object>> devMap = devRecords.stream()
+        .collect(Collectors.toMap(
+                row -> createCompositeKey(row, List.of("Employee_ID", "departmentid")), // List of columns for composite key
+                row -> new LinkedHashMap<>(row)
+        ));
+
+
+private static String createCompositeKey(Map<String, Object> row, List<String> keyColumns) {
+    return keyColumns.stream()
+            .map(column -> String.valueOf(row.get(column))) // Convert each column value to String
+            .collect(Collectors.joining("_"));             // Concatenate with a separator (e.g., "_")
+}
+
+
