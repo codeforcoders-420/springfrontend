@@ -120,3 +120,97 @@ public class DataComparison {
         }
     }
 }
+
+
+
+
+******************************************
+
+private static List<Map<String, Object>> compareData(Map<Object, Map<String, Object>> devMap,
+                                                     Map<Object, Map<String, Object>> targetMap) {
+    List<Map<String, Object>> result = new ArrayList<>();
+
+    // Remove exact matches using the full composite key
+    Iterator<Object> devIterator = devMap.keySet().iterator();
+    while (devIterator.hasNext()) {
+        Object fullCompositeKey = devIterator.next();
+        if (targetMap.containsKey(fullCompositeKey) &&
+                devMap.get(fullCompositeKey).equals(targetMap.get(fullCompositeKey))) {
+            devIterator.remove();
+            targetMap.remove(fullCompositeKey);
+        }
+    }
+
+    // Create reduced composite keys for remaining rows
+    Map<Object, Map<String, Object>> reducedDevMap = reduceCompositeKeys(devMap);
+    Map<Object, Map<String, Object>> reducedTargetMap = reduceCompositeKeys(targetMap);
+
+    // Compare rows in reducedDevMap
+    for (Object reducedKey : reducedDevMap.keySet()) {
+        Map<String, Object> devRow = reducedDevMap.get(reducedKey);
+        Map<String, Object> targetRow = reducedTargetMap.get(reducedKey);
+
+        if (targetRow != null) {
+            // Matching reduced key, compare non-key columns
+            List<String> differences = devRow.keySet().stream()
+                    .filter(column -> !isPrimaryKeyColumn(column)) // Skip primary key columns
+                    .filter(column -> !Objects.equals(devRow.get(column), targetRow.get(column)))
+                    .collect(Collectors.toList());
+
+            if (!differences.isEmpty()) {
+                Map<String, Object> diffRow = new LinkedHashMap<>(devRow);
+                diffRow.put("Difference", String.join(", ", differences) + " mismatch");
+                result.add(diffRow);
+            }
+        } else {
+            // Reduced key exists in source but not in target
+            Map<String, Object> diffRow = new LinkedHashMap<>(devRow);
+            diffRow.put("Difference", "Exist only in source, not exist in target");
+            result.add(diffRow);
+        }
+    }
+
+    // Compare rows in reducedTargetMap
+    for (Object reducedKey : reducedTargetMap.keySet()) {
+        if (!reducedDevMap.containsKey(reducedKey)) {
+            Map<String, Object> targetRow = reducedTargetMap.get(reducedKey);
+            Map<String, Object> diffRow = new LinkedHashMap<>(targetRow);
+            diffRow.put("Difference", "Exist only in target & not exist in source");
+            result.add(diffRow);
+        }
+    }
+
+    return result;
+}
+
+// Method to reduce composite keys (use only primary key columns)
+private static Map<Object, Map<String, Object>> reduceCompositeKeys(Map<Object, Map<String, Object>> map) {
+    return map.values().stream()
+            .collect(Collectors.toMap(
+                    row -> createReducedCompositeKey(row), // Create reduced composite key
+                    row -> new LinkedHashMap<>(row)       // Copy row data
+            ));
+}
+
+// Helper method to check if a column is part of the primary key
+private static boolean isPrimaryKeyColumn(String column) {
+    List<String> primaryKeyColumns = List.of("Proc", "Mod1", "Mod2", "Mod3", "Mod4");
+    return primaryKeyColumns.contains(column);
+}
+
+// Method to create a full composite key for a row
+private static String createFullCompositeKey(Map<String, Object> row) {
+    List<String> fullKeyColumns = List.of("Proc", "Mod1", "Mod2", "Mod3", "Mod4", "Effective", "Term", "Allowed amount");
+    return fullKeyColumns.stream()
+            .map(column -> String.valueOf(row.get(column))) // Convert column value to String
+            .collect(Collectors.joining("_"));              // Concatenate with a separator (e.g., "_")
+}
+
+// Method to create a reduced composite key for a row
+private static String createReducedCompositeKey(Map<String, Object> row) {
+    List<String> primaryKeyColumns = List.of("Proc", "Mod1", "Mod2", "Mod3", "Mod4");
+    return primaryKeyColumns.stream()
+            .map(column -> String.valueOf(row.get(column))) // Convert column value to String
+            .collect(Collectors.joining("_"));              // Concatenate with a separator (e.g., "_")
+}
+
