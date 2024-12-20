@@ -222,3 +222,49 @@ private static List<Map<String, Object>> compareData(Map<String, List<Map<String
     return result;
 }
 
+
+
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
+private static void generateReport(List<Map<String, Object>> data, String sourceEnv, String targetEnv) {
+    // Determine the filename suffix based on whether there are differences
+    String status = data.isEmpty() ? "No Differences" : "Differences";
+
+    // Generate timestamp
+    String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("ddMMyyyyHHmmss"));
+
+    // Generate the file name
+    String fileName = String.format("C:/ComparisonReports/%s_to_%s_%s_%s.xlsx", sourceEnv, targetEnv, status, timestamp);
+
+    try (Workbook workbook = new XSSFWorkbook();
+         FileOutputStream fileOut = new FileOutputStream(fileName)) {
+        Sheet sheet = workbook.createSheet("Comparison Report");
+
+        // Write header row
+        if (!data.isEmpty()) {
+            Row headerRow = sheet.createRow(0);
+            int headerCellIndex = 0;
+            for (String key : data.get(0).keySet()) {
+                headerRow.createCell(headerCellIndex++).setCellValue(key);
+            }
+        }
+
+        // Write data rows
+        int rowIndex = 1;
+        for (Map<String, Object> rowData : data) {
+            Row row = sheet.createRow(rowIndex++);
+            int cellIndex = 0;
+            for (Object value : rowData.values()) {
+                row.createCell(cellIndex++).setCellValue(value != null ? value.toString() : "");
+            }
+        }
+
+        workbook.write(fileOut);
+        System.out.println("Report generated: " + fileName);
+
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
+}
+
