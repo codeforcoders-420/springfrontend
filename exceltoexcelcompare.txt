@@ -80,3 +80,110 @@ public class ExcelComparator {
         outputWorkbook.close();
     }
 }
+
+
+
+
+*****************************************************
+
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
+import java.io.*;
+import java.util.*;
+
+public class ExcelComparator {
+    public static void compareExcelFiles(String sourceFilePath, String targetFilePath, String outputFile) throws IOException {
+        Workbook sourceWorkbook = WorkbookFactory.create(new File(sourceFilePath));
+        Workbook targetWorkbook = WorkbookFactory.create(new File(targetFilePath));
+        Sheet sourceSheet = sourceWorkbook.getSheetAt(0);
+        Sheet targetSheet = targetWorkbook.getSheetAt(0);
+
+        Workbook outputWorkbook = new XSSFWorkbook();
+        Sheet outputSheet = outputWorkbook.createSheet("Results");
+
+        // Extract file names from paths
+        String sourceFileName = new File(sourceFilePath).getName();
+        String targetFileName = new File(targetFilePath).getName();
+
+        // Create the header row in the output file
+        Row headerRow = sourceSheet.getRow(0); // Assuming first row is the header
+        Row outputHeaderRow = outputSheet.createRow(0);
+
+        // Copy the headers to the output file
+        int headerColCount = headerRow.getLastCellNum();
+        for (int i = 0; i < headerColCount; i++) {
+            outputHeaderRow.createCell(i).setCellValue(headerRow.getCell(i).toString());
+        }
+        // Add "Differences" and "File Name" columns to the output header
+        outputHeaderRow.createCell(headerColCount).setCellValue("Differences");
+        outputHeaderRow.createCell(headerColCount + 1).setCellValue("File Name");
+
+        int outputRowNum = 1;
+
+        // Compare rows
+        for (int rowIndex = 1; rowIndex <= sourceSheet.getLastRowNum(); rowIndex++) { // Skip the header row
+            Row sourceRow = sourceSheet.getRow(rowIndex);
+            Row targetRow = targetSheet.getRow(rowIndex);
+
+            if (sourceRow != null && targetRow != null) {
+                List<String> mismatchedColumns = new ArrayList<>();
+                boolean isMismatch = false;
+
+                // Compare each cell in the row
+                for (int colIndex = 0; colIndex < headerColCount; colIndex++) {
+                    Cell sourceCell = sourceRow.getCell(colIndex);
+                    Cell targetCell = targetRow.getCell(colIndex);
+
+                    String sourceValue = (sourceCell != null) ? sourceCell.toString() : "";
+                    String targetValue = (targetCell != null) ? targetCell.toString() : "";
+
+                    if (!sourceValue.equals(targetValue)) {
+                        mismatchedColumns.add(headerRow.getCell(colIndex).toString());
+                        isMismatch = true;
+                    }
+                }
+
+                if (isMismatch) {
+                    Row outputRow = outputSheet.createRow(outputRowNum++);
+
+                    // Write the full row
+                    for (int colIndex = 0; colIndex < headerColCount; colIndex++) {
+                        Cell outputCell = outputRow.createCell(colIndex);
+                        Cell sourceCell = sourceRow.getCell(colIndex);
+                        outputCell.setCellValue((sourceCell != null) ? sourceCell.toString() : "");
+                    }
+
+                    // Write the Differences column
+                    outputRow.createCell(headerColCount).setCellValue(String.join(", ", mismatchedColumns));
+
+                    // Write the File Name column
+                    outputRow.createCell(headerColCount + 1).setCellValue(sourceFileName);
+                }
+            }
+        }
+
+        // Save the output file
+        try (FileOutputStream fos = new FileOutputStream(outputFile)) {
+            outputWorkbook.write(fos);
+        }
+
+        sourceWorkbook.close();
+        targetWorkbook.close();
+        outputWorkbook.close();
+    }
+
+    public static void main(String[] args) {
+        try {
+            String sourceFilePath = "path/to/source.xlsx";
+            String targetFilePath = "path/to/target.xlsx";
+            String outputFile = "path/to/OutputResults.xlsx";
+
+            compareExcelFiles(sourceFilePath, targetFilePath, outputFile);
+            System.out.println("Comparison complete. Results saved in: " + outputFile);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
+visual
