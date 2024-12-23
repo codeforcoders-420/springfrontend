@@ -1,0 +1,82 @@
+// Main Application Class
+import javafx.application.Application;
+import javafx.stage.Stage;
+import javafx.scene.Scene;
+import javafx.scene.control.*;
+import javafx.scene.layout.*;
+
+public class ExcelCompareApp extends Application {
+    @Override
+    public void start(Stage primaryStage) {
+        Label file1Label = new Label("Select File 1:");
+        Button file1Button = new Button("Browse...");
+        Label file2Label = new Label("Select File 2:");
+        Button file2Button = new Button("Browse...");
+        Button compareButton = new Button("Compare Files");
+        Hyperlink reportLink = new Hyperlink("Reports");
+
+        VBox layout = new VBox(10, file1Label, file1Button, file2Label, file2Button, compareButton, reportLink);
+        Scene scene = new Scene(layout, 400, 300);
+        primaryStage.setScene(scene);
+        primaryStage.setTitle("Excel File Comparator");
+        primaryStage.show();
+    }
+
+    public static void main(String[] args) {
+        launch(args);
+    }
+}
+
+
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
+import java.io.*;
+import java.util.*;
+
+public class ExcelComparator {
+    public static void compareExcelFiles(String sourceFile, String targetFile, String outputFile) throws IOException {
+        Workbook sourceWorkbook = WorkbookFactory.create(new File(sourceFile));
+        Workbook targetWorkbook = WorkbookFactory.create(new File(targetFile));
+        Sheet sourceSheet = sourceWorkbook.getSheetAt(0);
+        Sheet targetSheet = targetWorkbook.getSheetAt(0);
+
+        Workbook outputWorkbook = new XSSFWorkbook();
+        Sheet outputSheet = outputWorkbook.createSheet("Results");
+
+        // Header
+        Row header = outputSheet.createRow(0);
+        header.createCell(0).setCellValue("Differences");
+        header.createCell(1).setCellValue("File Name");
+
+        int outputRowNum = 1;
+
+        for (Row sourceRow : sourceSheet) {
+            Row targetRow = targetSheet.getRow(sourceRow.getRowNum());
+            if (targetRow != null) {
+                List<String> differences = new ArrayList<>();
+                for (int i = 0; i < sourceRow.getLastCellNum(); i++) {
+                    String sourceValue = sourceRow.getCell(i).toString();
+                    String targetValue = targetRow.getCell(i).toString();
+                    if (!sourceValue.equals(targetValue)) {
+                        differences.add(sourceSheet.getRow(0).getCell(i).toString());
+                    }
+                }
+
+                if (!differences.isEmpty()) {
+                    Row outputRow = outputSheet.createRow(outputRowNum++);
+                    outputRow.createCell(0).setCellValue(String.join(", ", differences));
+                    outputRow.createCell(1).setCellValue("Source File: " + sourceFile);
+                }
+            }
+        }
+
+        try (FileOutputStream fos = new FileOutputStream(outputFile)) {
+            outputWorkbook.write(fos);
+        }
+
+        sourceWorkbook.close();
+        targetWorkbook.close();
+        outputWorkbook.close();
+    }
+}
