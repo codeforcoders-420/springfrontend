@@ -187,3 +187,177 @@ public class ExcelComparator {
     }
 }
 visual
+
+
+*************************************************************************************************
+
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
+import java.io.*;
+import java.util.*;
+import java.util.stream.Collectors;
+
+public class ExcelComparator {
+    public static void compareExcelFiles(String sourceFilePath, String targetFilePath, String outputFile) throws IOException {
+        Workbook sourceWorkbook = WorkbookFactory.create(new File(sourceFilePath));
+        Workbook targetWorkbook = WorkbookFactory.create(new File(targetFilePath));
+        Sheet sourceSheet = sourceWorkbook.getSheetAt(0);
+        Sheet targetSheet = targetWorkbook.getSheetAt(0);
+
+        Workbook outputWorkbook = new XSSFWorkbook();
+        Sheet outputSheet = outputWorkbook.createSheet("Results");
+
+        String sourceFileName = new File(sourceFilePath).getName();
+        String targetFileName = new File(targetFilePath).getName();
+
+        // Header row setup
+        Row headerRow = sourceSheet.getRow(0); // Assuming the first row is the header
+        Row outputHeaderRow = outputSheet.createRow(0);
+
+        int headerColCount = headerRow.getLastCellNum();
+        for (int i = 0; i < headerColCount; i++) {
+            outputHeaderRow.createCell(i).setCellValue(headerRow.getCell(i).toString());
+        }
+        outputHeaderRow.createCell(headerColCount).setCellValue("Differences");
+        outputHeaderRow.createCell(headerColCount + 1).setCellValue("File Name");
+
+        // Read all data rows from source and target
+        List<Row> sourceRows = getDataRows(sourceSheet);
+        List<Row> targetRows = getDataRows(targetSheet);
+
+        // Step 1: Find and remove exact matches
+        Set<String> targetRowSet = targetRows.stream()
+                .map(ExcelComparator::rowToString)
+                .collect(Collectors.toSet());
+        List<Row> exactMatches = sourceRows.stream()
+                .filter(row -> targetRowSet.contains(rowToString(row)))
+                .collect(Collectors.toList());
+
+        sourceRows.removeAll(exactMatches);
+        targetRows.removeIf(row -> exactMatches.stream().anyMatch(match -> rowToString(row).equals(rowToString(match))));
+
+        // Step 2: Compare remaining rows
+        int outputRowNum = 1;
+
+        // Compare Source to Target
+        for (Row sourceRow : sourceRows) {
+            String primaryKey = buildPrimaryKey(sourceRow);
+            Row matchingTargetRow = findRowByPrimaryKey(targetRows, primaryKey);
+
+            if (matchingTargetRow != null) {
+                List<String> mismatchedColumns = findMismatchedColumns(sourceRow, matchingTargetRow);
+                if (!mismatchedColumns.isEmpty()) {
+                    writeOutputRow(outputSheet, sourceRow, mismatchedColumns, sourceFileName, outputRowNum++);
+                }
+            } else {
+                writeOutputRow(outputSheet, sourceRow, List.of("Record removed in target sheet"), sourceFileName, outputRowNum++);
+            }
+        }
+
+        // Compare Target to Source
+        for (Row targetRow : targetRows) {
+            String primaryKey = buildPrimaryKey(targetRow);
+            Row matchingSourceRow = findRowByPrimaryKey(sourceRows, primaryKey);
+
+            if (matchingSourceRow != null) {
+                List<String> mismatchedColumns = findMismatchedColumns(targetRow, matchingSourceRow);
+                if (!mismatchedColumns.isEmpty()) {
+                    writeOutputRow(outputSheet, targetRow, mismatchedColumns, targetFileName, outputRowNum++);
+                }
+            } else {
+                writeOutputRow(outputSheet, targetRow, List.of("Record removed in source sheet"), targetFileName, outputRowNum++);
+            }
+        }
+
+        // Save the output
+        try (FileOutputStream fos = new FileOutputStream(outputFile)) {
+            outputWorkbook.write(fos);
+        }
+
+        sourceWorkbook.close();
+        targetWorkbook.close();
+        outputWorkbook.close();
+    }
+
+    // Helper to get all data rows
+    private static List<Row> getDataRows(Sheet sheet) {
+        List<Row> rows = new ArrayList<>();
+        for (int i = 1; i <= sheet.getLastRowNum(); i++) { // Skip header row
+            rows.add(sheet.getRow(i));
+        }
+        return rows;
+    }
+
+    // Helper to convert a row to a string for comparison
+    private static String rowToString(Row row) {
+        StringBuilder sb = new StringBuilder();
+        for (Cell cell : row) {
+            sb.append(cell.toString()).append("|");
+        }
+        return sb.toString();
+    }
+
+    // Helper to build a primary key from the first 3 columns
+    private static String buildPrimaryKey(Row row) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < 3; i++) { // Assuming first 3 columns are primary key
+            Cell cell = row.getCell(i);
+            sb.append((cell != null) ? cell.toString() : "").append("|");
+        }
+        return sb.toString();
+    }
+
+    // Helper to find a row in the target by primary key
+    private static Row findRowByPrimaryKey(List<Row> rows, String primaryKey) {
+        for (Row row : rows) {
+            if (buildPrimaryKey(row).equals(primaryKey)) {
+                return row;
+            }
+        }
+        return null;
+    }
+
+    // Helper to find mismatched columns
+    private static List<String> findMismatchedColumns(Row row1, Row row2) {
+        List<String> mismatchedColumns = new ArrayList<>();
+        Row headerRow = row1.getSheet().getRow(0);
+
+        for (int i = 0; i < row1.getLastCellNum(); i++) {
+            String value1 = (row1.getCell(i) != null) ? row1.getCell(i).toString() : "";
+            String value2 = (row2.getCell(i) != null) ? row2.getCell(i).toString() : "";
+
+            if (!value1.equals(value2)) {
+                mismatchedColumns.add(headerRow.getCell(i).toString());
+            }
+        }
+        return mismatchedColumns;
+    }
+
+    // Helper to write an output row
+    private static void writeOutputRow(Sheet sheet, Row sourceRow, List<String> differences, String fileName, int rowNum) {
+        Row outputRow = sheet.createRow(rowNum);
+
+        for (int i = 0; i < sourceRow.getLastCellNum(); i++) {
+            Cell sourceCell = sourceRow.getCell(i);
+            outputRow.createCell(i).setCellValue((sourceCell != null) ? sourceCell.toString() : "");
+        }
+
+        outputRow.createCell(sourceRow.getLastCellNum()).setCellValue(String.join(", ", differences));
+        outputRow.createCell(sourceRow.getLastCellNum() + 1).setCellValue(fileName);
+    }
+
+    public static void main(String[] args) {
+        try {
+            String sourceFilePath = "path/to/source.xlsx";
+            String targetFilePath = "path/to/target.xlsx";
+            String outputFile = "path/to/OutputResults.xlsx";
+
+            compareExcelFiles(sourceFilePath, targetFilePath, outputFile);
+            System.out.println("Comparison complete. Results saved in: " + outputFile);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
+
