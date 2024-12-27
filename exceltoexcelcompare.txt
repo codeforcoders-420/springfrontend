@@ -361,3 +361,23 @@ public class ExcelComparator {
     }
 }
 
+****************************************************************
+
+import java.util.*;
+import java.util.stream.Collectors;
+
+// Step 1: Precompute exact matches into a HashSet for fast lookups
+Set<String> exactMatchSet = exactMatches.stream()
+        .map(ExcelComparator::rowToString)
+        .collect(Collectors.toSet());
+
+// Step 2: Filter sourceRows and targetRows using the precomputed HashSet
+sourceRows = sourceRows.stream()
+        .filter(row -> !exactMatchSet.contains(rowToString(row)))
+        .collect(Collectors.toList());
+
+targetRows = targetRows.stream()
+        .filter(row -> !exactMatchSet.contains(rowToString(row)))
+        .collect(Collectors.toList());
+
+
