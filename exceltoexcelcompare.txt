@@ -380,4 +380,39 @@ targetRows = targetRows.stream()
         .filter(row -> !exactMatchSet.contains(rowToString(row)))
         .collect(Collectors.toList());
 
+*********************************************************************
+
+// Helper to write an output row with custom logic for Differences
+private static void writeOutputRow(Sheet sheet, Row sourceRow, List<String> mismatchedColumns, String fileName, int rowNum) {
+    Row outputRow = sheet.createRow(rowNum);
+
+    // Copy all column values from the source row to the output row
+    for (int i = 0; i < sourceRow.getLastCellNum(); i++) {
+        Cell sourceCell = sourceRow.getCell(i);
+        outputRow.createCell(i).setCellValue((sourceCell != null) ? sourceCell.toString() : "");
+    }
+
+    // Apply custom logic for Differences column
+    String differenceMessage = getCustomDifferenceMessage(mismatchedColumns);
+
+    // Write the Differences message
+    outputRow.createCell(sourceRow.getLastCellNum()).setCellValue(differenceMessage);
+
+    // Write the file name
+    outputRow.createCell(sourceRow.getLastCellNum() + 1).setCellValue(fileName);
+}
+
+// Helper to get custom difference messages based on mismatched columns
+private static String getCustomDifferenceMessage(List<String> mismatchedColumns) {
+    if (mismatchedColumns.contains("Start Date") && mismatchedColumns.contains("Rate")) {
+        return "Rate change. New Span created";
+    } else if (mismatchedColumns.contains("End Date")) {
+        return "Termed the current rate span";
+    } else if (mismatchedColumns.contains("Rate")) {
+        return "Existing Rate changed";
+    } else {
+        // Default behavior: List mismatched column headers
+        return String.join(", ", mismatchedColumns);
+    }
+}
 
