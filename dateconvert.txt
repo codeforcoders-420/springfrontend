@@ -1,0 +1,46 @@
+function sendProdDeployedDate() {
+    const validateBtn = document.getElementById('validate-btn-src');
+    const changeFileUpload = document.getElementById('peerReview-file');
+    const prodDeployedDateInput = document.getElementById('prod-deployed-date');
+    const fileInput = document.getElementById('peerReview-file');
+    const file = fileInput.files[0];
+
+    if (!file) {
+        alert("Please select a file.");
+        return;
+    }
+
+    if (!prodDeployedDateInput.value) {
+        alert("Please select the Prod Deployed Date.");
+        return;
+    }
+
+    // Parse the selected date and reformat it
+    const selectedDate = new Date(prodDeployedDateInput.value);
+    const formattedDate = `${(selectedDate.getMonth() + 1).toString().padStart(2, '0')}/` +
+                          `${selectedDate.getDate().toString().padStart(2, '0')}/` +
+                          `${selectedDate.getFullYear()}`;
+
+    console.log("Formatted Date: ", formattedDate); // Verify the date format in the console
+
+    validateBtn.disabled = true;
+    changeFileUpload.disabled = true;
+
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("prodDeployedDate", formattedDate); // Send formatted date as a string
+
+    fetch('/validate-excel', {
+        method: 'POST',
+        body: formData
+    }).then(response => response.text()).then(text => {
+        console.log(text);
+        alert("Validation successful!");
+    }).catch(error => {
+        console.error("Error: ", error);
+        alert("Validation failed!");
+    }).finally(() => {
+        validateBtn.disabled = false;
+        changeFileUpload.disabled = false;
+    });
+}
