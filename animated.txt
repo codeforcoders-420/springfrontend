@@ -1,0 +1,98 @@
+<div id="loading-spinner" style="display: none;">
+    <img src="/static/loading.gif" alt="Loading" />
+</div>
+
+
+#loading-spinner {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 9999;
+    background-color: rgba(255, 255, 255, 0.8); /* Optional overlay background */
+    padding: 20px;
+    border-radius: 8px;
+}
+
+
+function peerreviewvalidatre() {
+    const validateBtn = document.getElementById('validate-btn-src');
+    const changeFileUpload = document.getElementById('peerReview-file');
+    const progressCircle = document.querySelector('.progress-ring__circle');
+    const progressText = document.querySelector('.progress-ring__text');
+    const messageArea = document.getElementById('message-area');
+    const radius = progressCircle.r.baseVal.value;
+    const circumference = 2 * Math.PI * radius;
+    const fileInput = document.getElementById('peerReview-file');
+    const file = fileInput.files[0];
+    const loadingSpinner = document.getElementById('loading-spinner');
+
+    progressCircle.style.strokeDasharray = `${circumference} ${circumference}`;
+    progressCircle.style.strokeDashoffset = circumference;
+
+    function setProgress(percent) {
+        const offset = circumference - (percent / 100) * circumference;
+        progressCircle.style.strokeDashoffset = offset;
+        progressText.textContent = `${percent}%`;
+
+        if (percent === 100) {
+            resetUIAfterCompletion();
+        }
+    }
+
+    function resetUIAfterCompletion() {
+        changeFileUpload.value = '';
+        validateBtn.disabled = false;
+        changeFileUpload.disabled = false;
+        loadingSpinner.style.display = "none"; // Hide spinner
+    }
+
+    function displayLatestMessage(message) {
+        messageArea.style.display = "block";
+        messageArea.textContent = message;
+    }
+
+    function newconnect() {
+        const peersocket = new SockJS('/progress-websocket');
+        const peerstompClient = Stomp.over(peersocket);
+        peerstompClient.connect({}, function (frame) {
+            console.log('Connected: ' + frame);
+            peerstompClient.subscribe('/topic/progress', function (response) {
+                const data = response.body.split(":");
+                const type = data[0];
+                const content = data[1];
+
+                if (type === "progress") {
+                    setProgress(parseInt(content));
+                } else if (type === "message") {
+                    displayLatestMessage(content);
+                }
+            });
+        });
+    }
+
+    if (!file) {
+        alert("Please select files.");
+        return;
+    } else {
+        validateBtn.disabled = true;
+        changeFileUpload.disabled = true;
+        loadingSpinner.style.display = "block"; // Show spinner
+
+        newconnect();
+
+        const formData = new FormData();
+        formData.append("file", file);
+
+        fetch('/validate-excel', {
+            method: 'POST',
+            body: formData
+        }).then(response => response.text()).then(text => {
+            console.log(text);
+            resetUIAfterCompletion();
+        }).catch(error => {
+            console.error("Error: ", error);
+            resetUIAfterCompletion();
+        });
+    }
+}
