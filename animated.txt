@@ -142,3 +142,62 @@ document.getElementById('validate-btn-src').addEventListener('click', () => {
 });
 
 
+*****************************************
+
+<div id="loading-spinner" style="display: none;">
+    <div class="spinner"></div>
+</div>
+
+
+#loading-spinner {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1000;
+}
+
+.spinner {
+    border: 8px solid rgba(0, 0, 0, 0.1); /* Light border for background */
+    border-top: 8px solid #3498db; /* Blue color for spinning effect */
+    border-radius: 50%;
+    width: 50px; /* Adjust size as needed */
+    height: 50px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+
+
+function showLoader() {
+    document.getElementById('loading-spinner').style.display = 'block';
+}
+
+function hideLoader() {
+    document.getElementById('loading-spinner').style.display = 'none';
+}
+
+// Example: Show loader on Validate button click
+document.getElementById('validate-btn-src').addEventListener('click', () => {
+    showLoader();
+
+    // Simulate a delay for demonstration
+    setTimeout(() => {
+        hideLoader();
+        alert('Validation complete!');
+    }, 3000); // Replace this with your actual process
+});
+
+
+
+
+
+
