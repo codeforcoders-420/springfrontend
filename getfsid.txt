@@ -1,0 +1,42 @@
+document.addEventListener("DOMContentLoaded", function () {
+    fetch('/api/feeSchedules') // Call the API endpoint
+        .then(response => response.json()) // Convert response to JSON
+        .then(data => {
+            const dropdown = document.getElementById('feeScheduleDropdown');
+            dropdown.innerHTML = '<option value="">--Select Fee Schedule--</option>'; // Default Option
+
+            data.forEach(feeScheduleId => {
+                const option = document.createElement('option');
+                option.value = feeScheduleId;   // Set option value
+                option.textContent = feeScheduleId; // Set display text
+                dropdown.appendChild(option);   // Append option to dropdown
+            });
+        })
+        .catch(error => console.error("Error fetching Fee Schedules:", error));
+});
+
+
+
+
+<label for="feeScheduleDropdown">Select Fee Schedule:</label>
+<select id="feeScheduleDropdown">
+    <option value="">--Select Fee Schedule--</option> <!-- Default option -->
+</select>
+
+
+import org.springframework.web.bind.annotation.*;
+import org.springframework.beans.factory.annotation.Autowired;
+import java.util.List;
+
+@RestController
+@RequestMapping("/api")
+public class FeeScheduleController {
+
+    @Autowired
+    private FeeScheduleService feeScheduleService;
+
+    @GetMapping("/feeSchedules")
+    public List<String> getFeeSchedules() {
+        return feeScheduleService.getAllFeeSchedules();
+    }
+}
