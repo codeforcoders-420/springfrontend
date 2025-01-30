@@ -40,3 +40,44 @@ public class FeeScheduleController {
         return feeScheduleService.getAllFeeSchedules();
     }
 }
+
+
+************************
+
+document.addEventListener("DOMContentLoaded", function () {
+    fetch('/api/feeSchedules') // Fetch fee schedule data from backend
+        .then(response => response.json()) // Convert response to JSON
+        .then(data => {
+            const dropdowns = document.querySelectorAll('.feeScheduleDropdown'); // Select all dropdowns with class
+
+            dropdowns.forEach(dropdown => {
+                dropdown.innerHTML = '<option value="">--Select Fee Schedule--</option>'; // Default option
+
+                data.forEach(feeScheduleId => {
+                    const option = document.createElement('option');
+                    option.value = feeScheduleId;
+                    option.textContent = feeScheduleId;
+                    dropdown.appendChild(option); // Add options to each dropdown
+                });
+            });
+        })
+        .catch(error => console.error("Error fetching Fee Schedules:", error));
+});
+
+
+
+<label for="feeScheduleDropdown1">Select Fee Schedule (1):</label>
+<select class="feeScheduleDropdown">
+    <option value="">--Select Fee Schedule--</option>
+</select>
+
+<label for="feeScheduleDropdown2">Select Fee Schedule (2):</label>
+<select class="feeScheduleDropdown">
+    <option value="">--Select Fee Schedule--</option>
+</select>
+
+<label for="feeScheduleDropdown3">Select Fee Schedule (3):</label>
+<select class="feeScheduleDropdown">
+    <option value="">--Select Fee Schedule--</option>
+</select>
+
